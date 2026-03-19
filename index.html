@@ -246,6 +246,78 @@
       line-height: 1;
     }
 
+    .panel-journal-list {
+      display: grid;
+      gap: 4px;
+      margin-top: 8px;
+      max-height: 48vh;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .panel-journal-item {
+      font-size: 22px;
+      color: #c6d8ff;
+      border-left: 2px solid #29437d;
+      padding-left: 8px;
+      line-height: 1.05;
+    }
+
+    .forum-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 10px;
+      max-height: 52vh;
+    }
+
+    .forum-threads {
+      border: 1px solid #29437d;
+      padding: 8px;
+      overflow-y: auto;
+    }
+
+    .forum-thread-btn {
+      width: 100%;
+      background: rgba(10, 18, 34, 0.9);
+      border: 1px solid #29437d;
+      color: #b7cdf6;
+      font-family: "VT323", monospace;
+      font-size: 22px;
+      text-align: left;
+      padding: 6px;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+
+    .forum-thread-btn:hover,
+    .forum-thread-btn.active {
+      color: #ffffff;
+      border-color: #5a7bc2;
+      background: rgba(18, 30, 54, 0.95);
+    }
+
+    .forum-post {
+      border: 1px solid #29437d;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 22px;
+      line-height: 1.12;
+      color: #d8e6ff;
+      white-space: pre-wrap;
+      background: rgba(10, 18, 34, 0.86);
+    }
+
+    .forum-action {
+      margin-top: 10px;
+      border: 1px solid #29437d;
+      background: rgba(10, 18, 34, 0.92);
+      color: #d8e6ff;
+      font-family: "VT323", monospace;
+      font-size: 24px;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+
     #controls-fab {
       position: absolute;
       right: 26px;
@@ -308,6 +380,7 @@
         <p>Photo mode: P</p>
         <p>Screenshot in photo mode: O</p>
         <p>Hotkeys: H</p>
+        <p>Forum panel: F</p>
         <p>Changelog: L</p>
         <p>Performance: I</p>
         <p>Close panels: Esc</p>
@@ -315,10 +388,8 @@
 
       <div class="game-panel" id="panel-journal">
         <h2>Journal</h2>
-        <p>Day 5694: Returned to Brennan's Crossing.</p>
-        <p>Mira still keeps one room lit.</p>
-        <p>The dead tree bloomed again.</p>
-        <p>Objective: Speak to everyone still here.</p>
+        <p id="journal-meta">Recovered entries will appear here.</p>
+        <div id="journal-list" class="panel-journal-list"></div>
       </div>
 
       <div class="game-panel" id="panel-changelog">
@@ -335,6 +406,24 @@
         <p>Design, writing, and code direction: you</p>
         <p>Engine: Phaser 3</p>
         <p>Art style and systems: live generated runtime content</p>
+      </div>
+
+      <div class="game-panel" id="panel-forum">
+        <h2>Forum Archive</h2>
+        <p id="forum-heading">Terminal feed</p>
+        <div class="forum-layout">
+          <div id="forum-threads" class="forum-threads"></div>
+          <div>
+            <div id="forum-post" class="forum-post">Select a thread.</div>
+            <button id="forum-contact" class="forum-action" style="display:none;">Contact Seller</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-panel" id="panel-ending">
+        <h2>Ending</h2>
+        <p id="ending-title">Route pending.</p>
+        <p id="ending-body">Keep exploring Valdris Online.</p>
       </div>
 
       <button id="controls-fab">controls [H]</button>
@@ -392,6 +481,70 @@
       ]
     };
 
+    const WORLD_INTERACTABLES = [
+      { id: "inn-sign", zone: "brennan", x: 6, y: 7, text: "The sign still reads THE EMBER INN. The E is hanging lower than the rest.", journal: "Inn sign still swinging after 5694 days." },
+      { id: "market-board", zone: "brennan", x: 25, y: 8, text: "Message board: LFG Gorrath raid. WTS Enchanted Boots. goodbye everyone. it was fun.", journal: "Found old market board posts frozen in time." },
+      { id: "fountain-bag", zone: "brennan", x: 35, y: 28, text: "A worn map shows only water tiles. Note attached: 'brb dinner'.", journal: "Recovered note from fountain square.", secret: "bag-note" },
+      { id: "dead-tree", zone: "brennan", x: 14, y: 24, text: "The dead tree should not bloom, but it still does.", journal: "The dead tree keeps choosing to bloom." },
+
+      { id: "windmill-hub", zone: "ashfield", x: 40, y: 15, text: "Three sails turn. One was never replaced.", journal: "Ashfield windmill rotates out of balance." },
+      { id: "green-crop", zone: "ashfield", x: 46, y: 32, text: "One tile of living green remains in a field of ash.", journal: "Found the single surviving crop.", secret: "green-crop" },
+
+      { id: "terminal-1", zone: "archive", x: 18, y: 18, terminal: "general", text: "General Discussion terminal hums awake." },
+      { id: "terminal-2", zone: "archive", x: 24, y: 18, terminal: "guild", text: "Guild Recruitment terminal still has pinned plans." },
+      { id: "terminal-3", zone: "archive", x: 30, y: 18, terminal: "trade", text: "Trade terminal lists prices nobody can pay anymore." },
+      { id: "terminal-4", zone: "archive", x: 18, y: 24, terminal: "support", text: "Help & Support terminal has years of unanswered questions." },
+      { id: "terminal-5", zone: "archive", x: 24, y: 24, terminal: "offtopic", text: "Off-topic terminal still feels the most human." },
+      { id: "terminal-6", zone: "archive", x: 30, y: 24, terminal: "corrupted", text: "A corrupted terminal emits static and partial names.", secret: "corrupted-terminal" },
+
+      { id: "server-console", zone: "server", x: 44, y: 18, text: "Server metrics: players online: 1 human, 7 persistent entities.", journal: "Server room acknowledged active maintenance mode." }
+    ];
+
+    const FORUM_TERMINALS = {
+      general: {
+        title: "General Discussion",
+        threads: [
+          { title: "is the game dying", body: "is the game dying lol\n\n[2006] reply: no way\n[2007] reply: maybe\n[2009] reply: see you friday." },
+          { title: "Patch celebration", body: "Patch 1.14.2 deployed!\nPeople posted fireworks ASCII and dance emotes for 19 pages." }
+        ]
+      },
+      guild: {
+        title: "Guild Recruitment",
+        threads: [
+          { title: "Ashveil Guild", body: "We are a family-friendly guild looking for healers, crafters, and patient people.\nRaid nights: Tue/Thu.\nStatus: never launched." },
+          { title: "Roster draft", body: "Dex_Slayer99 (tank?)\nKira (support)\nTavernKnight (trader)\nFinalized: never." }
+        ]
+      },
+      trade: {
+        title: "Trade",
+        threads: [
+          { title: "WTS Ember Cloak", body: "WTS [Ember Cloak] 2,500g or best offer.\nLast activity: 2009." },
+          { title: "TavernKnight listing", body: "Item: Worn Leather Glove\nCondition: patched twice\nPrice: 75g\nMessage to seller available.", contactSeller: true }
+        ]
+      },
+      support: {
+        title: "Help & Support",
+        threads: [
+          { title: "How do I get to Gorrath's Tomb?", body: "0 replies." },
+          { title: "The servers are going down Friday", body: "47 replies.\nMost messages are goodbyes." }
+        ]
+      },
+      offtopic: {
+        title: "Off-Topic",
+        threads: [
+          { title: "my dog died today", body: "my dog died today. just wanted to tell someone.\n\nDex_Slayer99: im sorry man. that sucks.\nKira: sending hugs." },
+          { title: "happy new year 2008", body: "happy new year everyone!!!! 2008 is gonna be great" }
+        ]
+      },
+      corrupted: {
+        title: "[CORRUPTED]",
+        threads: [
+          { title: "signal fragments", body: "whitenoise//user:[UNKNOWN]\nassembling...\ndissolving...\nERROR: registry mismatch" },
+          { title: "unregistered name", body: "name detected: __sable.thread\nstatus: not in account records" }
+        ]
+      }
+    };
+
     class MainScene extends Phaser.Scene {
       constructor() {
         super("main");
@@ -428,6 +581,8 @@
         this.windowKeyDownHandler = null;
         this.windowKeyUpHandler = null;
         this.menuStartHandler = null;
+        this.activeForumTerminal = null;
+        this.activeForumThreadIndex = 0;
       }
 
       preload() {
@@ -494,7 +649,7 @@
         this.dayMinutes = this.saveData.dayMinutes;
         this.sessionSeconds = this.saveData.totalPlaytime;
 
-        this.keys = this.input.keyboard.addKeys("W,A,S,D,E,UP,DOWN,LEFT,RIGHT,J,C,P,O,H,L,I,ESC");
+        this.keys = this.input.keyboard.addKeys("W,A,S,D,E,F,UP,DOWN,LEFT,RIGHT,J,C,P,O,H,L,I,ESC");
         this.registerFallbackKeyboard();
         this.enableCanvasFocus();
         this.prepareGeneratedTextures();
@@ -542,7 +697,7 @@
           if (!target) {
             return;
           }
-          this.startDialogue(target);
+          this.handleInteraction(target);
         });
 
         this.input.on("pointerdown", (pointer) => {
@@ -583,6 +738,8 @@
 
         this.refreshHud();
         this.bindStartMenu();
+        this.setupForumPanel();
+        this.refreshJournalPanel();
 
         this.time.addEvent({
           delay: 4000,
@@ -692,6 +849,11 @@
         }
         this.addChat("[SYSTEM]: Connection established.", "#cc8800");
         this.addChat("[Mira]: Welcome home, traveler.", "#44aaff");
+        if (!this.saveData.endingFlags.introLogged) {
+          this.addJournalEntry("Day 5694: Returned to Brennan's Crossing.");
+          this.addJournalEntry("Objective: Speak to everyone still here.");
+          this.saveData.endingFlags.introLogged = true;
+        }
       }
 
       bindStartMenu() {
@@ -1873,18 +2035,108 @@
       }
 
       getNearbyInteractable() {
-        const nearest = this.npcs
+        const nearestNpc = this.npcs
           .filter((n) => n.sprite.visible)
           .map((n) => ({
+            kind: "npc",
             npc: n,
             d: Phaser.Math.Distance.Between(this.player.x, this.player.y, n.sprite.x, n.sprite.y)
           }))
           .sort((a, b) => a.d - b.d)[0];
 
-        if (!nearest || nearest.d > 72) {
+        const nearestObject = WORLD_INTERACTABLES
+          .filter((i) => i.zone === this.zone)
+          .map((i) => ({
+            kind: "object",
+            object: i,
+            d: Phaser.Math.Distance.Between(this.player.x, this.player.y, i.x * TILE, i.y * TILE)
+          }))
+          .sort((a, b) => a.d - b.d)[0];
+
+        const npcInRange = nearestNpc && nearestNpc.d <= 72 ? nearestNpc : null;
+        const objectInRange = nearestObject && nearestObject.d <= 72 ? nearestObject : null;
+
+        if (!npcInRange && !objectInRange) {
           return null;
         }
-        return nearest.npc;
+        if (!npcInRange) {
+          return objectInRange;
+        }
+        if (!objectInRange) {
+          return npcInRange;
+        }
+        return npcInRange.d <= objectInRange.d ? npcInRange : objectInRange;
+      }
+
+      handleInteraction(target) {
+        if (!target) {
+          return;
+        }
+        if (target.kind === "npc") {
+          this.startDialogue(target.npc);
+          return;
+        }
+
+        const item = target.object;
+        if (!item) {
+          return;
+        }
+
+        this.addChat(`[INSPECT]: ${item.text}`, "#a6c4ff", true);
+
+        if (item.journal) {
+          this.addJournalEntry(item.journal);
+        }
+        if (item.secret) {
+          this.unlockSecret(item.secret);
+        }
+        if (item.terminal) {
+          this.openForumTerminal(item.terminal);
+        }
+      }
+
+      addJournalEntry(text) {
+        if (this.saveData.journalEntries.includes(text)) {
+          return;
+        }
+        this.saveData.journalEntries.push(text);
+        this.refreshJournalPanel();
+        this.addChat(`[JOURNAL]: ${text}`, "#88b8ff", true);
+      }
+
+      unlockSecret(id) {
+        if (this.saveData.secretsFound.includes(id)) {
+          return;
+        }
+        this.saveData.secretsFound.push(id);
+        this.addChat(`[SECRET]: ${id} recovered.`, "#e0a860");
+      }
+
+      refreshJournalPanel() {
+        const list = document.getElementById("journal-list");
+        const meta = document.getElementById("journal-meta");
+        if (!list || !meta) {
+          return;
+        }
+
+        list.innerHTML = "";
+        const entries = this.saveData.journalEntries;
+        meta.textContent = `Entries ${entries.length} · Secrets ${this.saveData.secretsFound.length}`;
+
+        if (entries.length === 0) {
+          const p = document.createElement("div");
+          p.className = "panel-journal-item";
+          p.textContent = "No recovered entries yet.";
+          list.appendChild(p);
+          return;
+        }
+
+        entries.slice().reverse().forEach((entry) => {
+          const p = document.createElement("div");
+          p.className = "panel-journal-item";
+          p.textContent = entry;
+          list.appendChild(p);
+        });
       }
 
       updatePrompt() {
@@ -1899,8 +2151,10 @@
         }
 
         const cam = this.cameras.main;
-        const sx = (target.sprite.x - cam.worldView.x) * cam.zoom;
-        const sy = (target.sprite.y - cam.worldView.y) * cam.zoom;
+        const wx = target.kind === "npc" ? target.npc.sprite.x : target.object.x * TILE;
+        const wy = target.kind === "npc" ? target.npc.sprite.y : target.object.y * TILE;
+        const sx = (wx - cam.worldView.x) * cam.zoom;
+        const sy = (wy - cam.worldView.y) * cam.zoom;
         this.interactionPrompt.setVisible(true);
         this.interactionPrompt.setPosition(Math.round(sx - 20), Math.round(sy - 64));
       }
@@ -1969,6 +2223,10 @@
 
         const first = this.dialogueState.lines[0];
         this.addChat(`[${this.dialogName.text}]: ${first}`, npc.id === "sable" ? "#6688cc" : "#44aaff");
+
+        if (npc.id === "gm") {
+          this.maybeTriggerEnding();
+        }
       }
 
       updateDialogueTyping(dtMs) {
@@ -2028,6 +2286,7 @@
         }
 
         this.input.keyboard.on("keydown-J", () => this.togglePanel("panel-journal"));
+        this.input.keyboard.on("keydown-F", () => this.togglePanel("panel-forum"));
         this.input.keyboard.on("keydown-C", () => this.togglePanel("panel-credits"));
         this.input.keyboard.on("keydown-H", () => this.togglePanel("panel-hotkeys"));
         this.input.keyboard.on("keydown-L", () => this.togglePanel("panel-changelog"));
@@ -2057,11 +2316,134 @@
       }
 
       hideAllPanels() {
-        ["panel-hotkeys", "panel-journal", "panel-changelog", "panel-credits"].forEach((id) => {
+        ["panel-hotkeys", "panel-journal", "panel-changelog", "panel-credits", "panel-forum", "panel-ending"].forEach((id) => {
           const el = document.getElementById(id);
           if (el) el.style.display = "none";
         });
         this.activePanelId = null;
+      }
+
+      setupForumPanel() {
+        const contact = document.getElementById("forum-contact");
+        if (contact) {
+          contact.onclick = () => {
+            this.saveData.endingFlags.contactSeller = true;
+            this.addChat("[SYSTEM]: Message sent.", "#cc8800");
+            if (this.computeEndingRoute() === "C") {
+              this.time.delayedCall(30000, () => {
+                this.addChat("TavernKnight: still there?", "#44aaff");
+              });
+            }
+          };
+        }
+      }
+
+      openForumTerminal(terminalId) {
+        const terminal = FORUM_TERMINALS[terminalId];
+        if (!terminal) {
+          return;
+        }
+
+        this.activeForumTerminal = terminalId;
+        this.activeForumThreadIndex = 0;
+        const heading = document.getElementById("forum-heading");
+        const threadsRoot = document.getElementById("forum-threads");
+        const postRoot = document.getElementById("forum-post");
+        const contact = document.getElementById("forum-contact");
+        if (!threadsRoot || !postRoot || !heading || !contact) {
+          return;
+        }
+
+        heading.textContent = terminal.title;
+        threadsRoot.innerHTML = "";
+
+        const renderThread = () => {
+          const thread = terminal.threads[this.activeForumThreadIndex];
+          postRoot.textContent = thread ? thread.body : "No thread selected.";
+          contact.style.display = thread && thread.contactSeller ? "inline-block" : "none";
+          Array.from(threadsRoot.querySelectorAll(".forum-thread-btn")).forEach((btn, idx) => {
+            btn.classList.toggle("active", idx === this.activeForumThreadIndex);
+          });
+        };
+
+        terminal.threads.forEach((thread, idx) => {
+          const b = document.createElement("button");
+          b.className = "forum-thread-btn";
+          b.textContent = thread.title;
+          b.onclick = () => {
+            this.activeForumThreadIndex = idx;
+            renderThread();
+          };
+          threadsRoot.appendChild(b);
+        });
+
+        renderThread();
+        this.togglePanel("panel-forum");
+        this.addJournalEntry(`Accessed archive terminal: ${terminal.title}`);
+      }
+
+      hasSpokenToAllMainNpcs() {
+        const required = ["mira", "aldric", "herald", "voss", "gorrath", "gm"];
+        return required.every((id) => this.saveData.npcSpoken[id] && this.saveData.npcSpoken[id].first);
+      }
+
+      hasSecondConversations() {
+        const required = ["mira", "aldric", "herald", "voss", "gorrath", "gm"];
+        return required.every((id) => this.saveData.npcSpoken[id] && this.saveData.npcSpoken[id].second);
+      }
+
+      computeEndingRoute() {
+        const secrets = this.saveData.secretsFound.length;
+        const journals = this.saveData.journalEntries.length;
+        const allMain = this.hasSpokenToAllMainNpcs();
+        const secondPass = this.hasSecondConversations();
+        const contacted = !!this.saveData.endingFlags.contactSeller;
+
+        if (allMain && secondPass && secrets >= 3 && journals >= 8 && contacted) {
+          return "C";
+        }
+        if (allMain && (secrets >= 2 || journals >= 6)) {
+          return "B";
+        }
+        return "A";
+      }
+
+      maybeTriggerEnding() {
+        if (this.zone !== "server") {
+          return;
+        }
+        if (this.sessionSeconds < 120) {
+          return;
+        }
+        if (!this.hasSpokenToAllMainNpcs()) {
+          return;
+        }
+
+        const route = this.computeEndingRoute();
+        this.showEndingPanel(route);
+      }
+
+      showEndingPanel(route) {
+        const title = document.getElementById("ending-title");
+        const body = document.getElementById("ending-body");
+        if (!title || !body) {
+          return;
+        }
+
+        if (route === "C") {
+          title.textContent = "Ending C · Reconnect";
+          body.textContent = "Thirty seconds after sending the listing message, a reply appears: 'still there?' The server is no longer just a museum. It is a conversation again.";
+        } else if (route === "B") {
+          title.textContent = "Ending B · Witness";
+          body.textContent = "You catalogued enough traces to prove they were here. The NPCs remain, but now their history is no longer silent.";
+        } else {
+          title.textContent = "Ending A · Last Observer";
+          body.textContent = "You came, looked around, and left marks only in volatile memory. Valdris keeps running in the dark.";
+        }
+
+        this.saveData.endingFlags.lastEnding = route;
+        this.togglePanel("panel-ending");
+        this.addChat(`[SYSTEM]: Ending route ${route} unlocked.`, "#cc8800");
       }
 
       togglePhotoMode() {
