@@ -91,7 +91,9 @@ const INTERACTABLES = [
   { id:"fountain-bag", zone:"brennan",  x:35, y:28, text:"A worn bag by the fountain. Inside: a corrupted map (shows only water tiles), and a note: 'brb dinner' — dated 6,843 days ago.", journal:"Found a bag at the fountain. The note says 'brb dinner'. They never came back.", secret:"brb-note" },
   { id:"dead-tree",    zone:"brennan",  x:14, y:24, text:"The dead cherry tree. Gray branches. No leaves. And yet, once a day, it chooses to bloom.", journal:"The dead cherry tree blooms once a day. No explanation." },
   { id:"darkrift88",   zone:"brennan",  x:11, y:17, text:"A frozen logout silhouette. Name tag: DarkRift_88 [OFFLINE]. The chair across from them is pulled out slightly. Someone sits there sometimes.", journal:"Found DarkRift_88 still logged in at their usual table.", secret:"darkrift-table" },
-  { id:"flower-bloom", zone:"brennan",  x:7,  y:9,  text:"One red bloom in the flower box. Three dead stalks. One stubborn, living thing.", journal:"One flower is still alive at the inn. Mira tends it.", secret:"red-bloom" },
+  { id:"flower-bloom", zone:"brennan",  x:7,  y:9,  text:"One red bloom in the flower box. Three dead stalks. One stubborn, living thing.", journal:"One flower is still alive at the inn. Enix tends it.", secret:"red-bloom" },
+  { id:"glitch-kiosk",  zone:"brennan",  x:31, y:12, text:"A broken event kiosk flashes old tournament brackets. Every champion slot now says [OFFLINE].", journal:"Found a glitched tournament kiosk in Brennan's Crossing." },
+  { id:"cable-nest",    zone:"brennan",  x:42, y:24, text:"A nest of Ethernet cables braided through a cracked lantern post. Someone labeled one cable: 'to nowhere'.", journal:"Saw cable-vines wrapped around a dead lamp post.", secret:"cable-vines" },
   // Ashfield
   { id:"windmill-stump",zone:"ashfield",x:40, y:15, text:"Three sails rotate. The fourth was never replaced after it broke in 2011. The imbalance makes the whole thing wobble slightly.", journal:"Ashfield windmill: three sails. The fourth is missing." },
   { id:"single-crop",  zone:"ashfield", x:46, y:35, text:"One tile of green in a field of ash. No marker, no stake. Ewen didn't plant it. It just grows.", journal:"Found the single surviving crop. Green. Unexplained.", secret:"green-crop" },
@@ -99,6 +101,8 @@ const INTERACTABLES = [
   { id:"wall-tally",   zone:"ashfield", x:12, y:14, text:"7,304 tick marks filling three walls of the farmhouse. Groups of five. One mark per day. The count is current.", journal:"Ewen has made 7,304 marks on his walls. One per day.", secret:"tally-marks" },
   { id:"farmb-journal",zone:"ashfield", x:38, y:22, text:"A journal on the floor. Farming notes, guild plans, crop rotation schedules. Last entry: 'logging off for finals week. back soon.'", journal:"Found the abandoned farming journal. Last entry: 'back soon'." },
   { id:"child-drawing",zone:"ashfield", x:20, y:22, text:"A child's drawing pinned to the wall — a player character sketched with the in-game art tool in 2004. Rough lines. Clearly happy.", journal:"Found a child's drawing of their character from 2004." },
+  { id:"drone-husk",   zone:"ashfield", x:33, y:34, text:"A rusted delivery drone half-buried in ash. Inventory slot still contains one potion and a birthday cupcake.", journal:"Found a wrecked delivery drone in Ashfield." },
+  { id:"pixel-totem",  zone:"ashfield", x:50, y:19, text:"A tilted holographic totem keeps trying to render grass textures. The files are missing, so it paints static instead.", journal:"A farm totem now renders static where crops should be." },
   // Archive
   { id:"terminal-1",   zone:"archive",  x:16, y:18, terminal:"general",    text:"General Discussion terminal hums awake." },
   { id:"terminal-2",   zone:"archive",  x:22, y:18, terminal:"guild",      text:"Guild Recruitment terminal. The Ashveil post is still at the top." },
@@ -109,9 +113,16 @@ const INTERACTABLES = [
   { id:"unfinished",   zone:"archive",  x:33, y:14, terminal:"unfinished", text:"A terminal with a blinking cursor. A post that was never finished." },
   { id:"archive-bell", zone:"archive",  x:20, y:38, text:"A small reception bell. The kind that means someone is waiting.", journal:"Rang the archive reception bell. Voss heard it." },
   { id:"lam-rules",    zone:"archive",  x:18, y:40, text:"Forum rules, 2003 edition, laminated. The lamination is smooth and precise. Voss laminated them in 2011.", journal:"Found the laminated forum rules. Voss wanted to preserve them properly." },
+  { id:"backup-cassettes", zone:"archive", x:24, y:36, text:"Crates of backup cassettes, each tagged by month. Most are blank. One is labeled: 'LAST FRIDAY, DO NOT ERASE'.", journal:"Found backup cassettes in the archive basement stacks." },
+  { id:"wire-altar",      zone:"archive", x:30, y:40, text:"A coil of old modem lines arranged like a shrine around an unplugged router. Someone left candles made of melted keycaps.", journal:"Found a strange cable shrine in the Forum Archive.", secret:"wire-altar" },
+  // Dungeon
+  { id:"raid-banners", zone:"dungeon", x:34, y:28, text:"Torn raid banners from guilds that never got their attempt. Names faded, logos still visible in the dust.", journal:"Saw torn raid banners in Gorrath's Tomb." },
+  { id:"cracked-orb",  zone:"dungeon", x:48, y:19, text:"A cracked orb displays frozen party frames: 40 slots, all disconnected.", journal:"A dungeon orb still tracks a raid that never assembled." },
   // Server
   { id:"srv-console",  zone:"server",   x:44, y:18, text:"Server metrics: players online: 1 human, 7 persistent entities. Uptime: 5,694 days. No scheduled maintenance.", journal:"Server room: 5,694 days uptime. No maintenance scheduled." },
-  { id:"error-log",    zone:"server",   x:30, y:22, text:"Error log, 2009-08-14: 'SHUTDOWN SEQUENCE INITIATED. SHUTDOWN SEQUENCE ABORTED — OPERATOR DISCONNECT DURING SEQUENCE.' The shutdown never finished.", journal:"Found the shutdown error log. The server was never properly stopped.", secret:"shutdown-abort" }
+  { id:"error-log",    zone:"server",   x:30, y:22, text:"Error log, 2009-08-14: 'SHUTDOWN SEQUENCE INITIATED. SHUTDOWN SEQUENCE ABORTED — OPERATOR DISCONNECT DURING SEQUENCE.' The shutdown never finished.", journal:"Found the shutdown error log. The server was never properly stopped.", secret:"shutdown-abort" },
+  { id:"coolant-puddle", zone:"server", x:38, y:30, text:"A neon coolant puddle ripples like liquid CRT glass. It reflects lines of code instead of your face.", journal:"Found a coolant leak reflecting scrolling code." },
+  { id:"cable-spine",    zone:"server", x:18, y:16, text:"A backbone trunk cable as thick as a tree root runs through the floor and disappears into the wall. Status LED: still blinking.", journal:"Traced the server backbone cable through the room.", secret:"backbone-spine" }
 ];
 
 // ── FORUM TERMINAL CONTENT ─────────────────────────────────────
@@ -485,6 +496,10 @@ class MainScene extends Phaser.Scene {
       this._placeLamp(38,22); this._placeLamp(44,22,false,true); // out
       // Sable bench
       this._placeBench(35,30);
+      this._placeScrapPile(31,12);
+      this._placeCableBundle(42,24,true);
+      this._placeDiscardedTerminal(24,13);
+      this._placePosterWall(18,11);
     }
     if(this.zone==="ashfield"){
       place("t_wmill",40,17,8);
@@ -494,16 +509,28 @@ class MainScene extends Phaser.Scene {
       place("t_farmhouse",12,16,8);
       this._placeChimneyAlone(55,38);
       this._placeGreenCrop(46,35);
+      this._placeScrapPile(33,34,0x4a4a58);
+      this._placeBrokenTotem(50,19);
+      this._placeCableBundle(45,24);
     }
     if(this.zone==="archive"){
       this._placeArchiveRacks();
+      this._placeCableBundle(30,40,true);
+      this._placeTapeCrates(24,36);
+      this._placeDiscardedTerminal(34,30,true);
     }
     if(this.zone==="dungeon"){
       place("t_throne",35,18,8);
       this._placeBrazier(28,20); this._placeBrazier(52,20);
+      this._placeBannerShreds(34,28);
+      this._placeRuneOrb(48,19);
+      this._placeBonePile(44,31);
     }
     if(this.zone==="server"){
       this._placeServerRacks();
+      this._placeCableSprawl(18,16);
+      this._placeCoolantLeak(38,30);
+      this._placeDiscardedTerminal(27,26,true);
     }
   }
 
@@ -555,6 +582,139 @@ class MainScene extends Phaser.Scene {
     g.fillRect(tx*TILE-24,ty*TILE-16,4,8); g.fillRect(tx*TILE+20,ty*TILE-16,4,8);
     g.lineStyle(1,0x1a1020,1); g.strokeRect(tx*TILE-24,ty*TILE-8,48,8);
     this.decorGroup.add(g);
+  }
+
+  _placeScrapPile(tx,ty,col=0x6a5848) {
+    const g=this.add.graphics().setDepth(6);
+    g.fillStyle(col,1);
+    g.fillCircle(tx*TILE-8,ty*TILE-6,8);
+    g.fillCircle(tx*TILE+2,ty*TILE-4,9);
+    g.fillCircle(tx*TILE+12,ty*TILE-7,7);
+    g.fillStyle(0x2a2a2a,1);
+    g.fillRect(tx*TILE-10,ty*TILE-12,4,2);
+    g.fillRect(tx*TILE+6,ty*TILE-14,5,2);
+    g.lineStyle(1,0x1a1020,.9);
+    g.strokeCircle(tx*TILE-8,ty*TILE-6,8);
+    g.strokeCircle(tx*TILE+2,ty*TILE-4,9);
+    g.strokeCircle(tx*TILE+12,ty*TILE-7,7);
+    this.decorGroup.add(g);
+  }
+
+  _placeCableBundle(tx,ty,glow=false) {
+    const g=this.add.graphics().setDepth(7);
+    g.lineStyle(2,0x202840,.95);
+    g.beginPath();
+    g.moveTo(tx*TILE-16,ty*TILE-4); g.lineTo(tx*TILE-5,ty*TILE-16); g.lineTo(tx*TILE+8,ty*TILE); g.lineTo(tx*TILE+18,ty*TILE-8);
+    g.moveTo(tx*TILE-18,ty*TILE+2); g.lineTo(tx*TILE-2,ty*TILE+8); g.lineTo(tx*TILE+7,ty*TILE-14); g.lineTo(tx*TILE+16,ty*TILE+4);
+    g.moveTo(tx*TILE-12,ty*TILE-10); g.lineTo(tx*TILE-1,ty*TILE+2); g.lineTo(tx*TILE+9,ty*TILE+2); g.lineTo(tx*TILE+20,ty*TILE-2);
+    g.strokePath();
+    g.fillStyle(0x2c3f70,1); g.fillRect(tx*TILE-5,ty*TILE-6,10,6);
+    g.fillStyle(0x68a2ff,1); g.fillRect(tx*TILE-3,ty*TILE-4,2,2); g.fillRect(tx*TILE+1,ty*TILE-4,2,2);
+    g.lineStyle(1,0x1a1020,1); g.strokeRect(tx*TILE-5,ty*TILE-6,10,6);
+    this.decorGroup.add(g);
+    if(glow){ const l=this.addLight(tx*TILE,ty*TILE-4,36,0x3b7dff,.25); this.zoneLights.push(l); }
+  }
+
+  _placeDiscardedTerminal(tx,ty,broken=false) {
+    const g=this.add.graphics().setDepth(7);
+    g.fillStyle(0x3a3a44,1); g.fillRect(tx*TILE-12,ty*TILE-18,24,16);
+    g.fillStyle(0x1a2338,1); g.fillRect(tx*TILE-10,ty*TILE-16,20,10);
+    g.fillStyle(broken?0x402020:0x40a8ff,.8); g.fillRect(tx*TILE-8,ty*TILE-14,16,6);
+    g.fillStyle(0x2a2a35,1); g.fillRect(tx*TILE-6,ty*TILE-2,12,4);
+    g.lineStyle(1,0x1a1020,1); g.strokeRect(tx*TILE-12,ty*TILE-18,24,16);
+    g.strokeRect(tx*TILE-10,ty*TILE-16,20,10);
+    if(broken){
+      g.lineStyle(1,0x8a3030,1); g.beginPath(); g.moveTo(tx*TILE-8,ty*TILE-14); g.lineTo(tx*TILE+8,ty*TILE-8); g.strokePath();
+    }
+    this.decorGroup.add(g);
+  }
+
+  _placePosterWall(tx,ty) {
+    const g=this.add.graphics().setDepth(7);
+    g.fillStyle(0x2a1a0a,.65); g.fillRect(tx*TILE-18,ty*TILE-26,36,20);
+    g.fillStyle(0x6a4a30,1); g.fillRect(tx*TILE-16,ty*TILE-24,14,8);
+    g.fillStyle(0x4a8ac8,1); g.fillRect(tx*TILE+2,ty*TILE-24,12,7);
+    g.fillStyle(0xa83848,1); g.fillRect(tx*TILE-8,ty*TILE-14,16,6);
+    g.lineStyle(1,0x1a1020,.9); g.strokeRect(tx*TILE-18,ty*TILE-26,36,20);
+    this.decorGroup.add(g);
+  }
+
+  _placeBrokenTotem(tx,ty) {
+    const g=this.add.graphics().setDepth(7);
+    g.fillStyle(0x2a2a35,1); g.fillRect(tx*TILE-8,ty*TILE-30,16,24);
+    g.fillStyle(0x2b4f7f,.85); g.fillRect(tx*TILE-6,ty*TILE-26,12,10);
+    g.fillStyle(0x606070,1); g.fillRect(tx*TILE-10,ty*TILE-6,20,6);
+    g.lineStyle(1,0x1a1020,1); g.strokeRect(tx*TILE-8,ty*TILE-30,16,24);
+    g.lineStyle(1,0x803030,1); g.beginPath(); g.moveTo(tx*TILE-5,ty*TILE-24); g.lineTo(tx*TILE+5,ty*TILE-18); g.strokePath();
+    this.decorGroup.add(g);
+  }
+
+  _placeTapeCrates(tx,ty) {
+    const g=this.add.graphics().setDepth(6);
+    g.fillStyle(0x4a3a2a,1); g.fillRect(tx*TILE-18,ty*TILE-12,36,12);
+    g.fillRect(tx*TILE-10,ty*TILE-22,20,10);
+    g.fillStyle(0xb8aa80,1); g.fillRect(tx*TILE-6,ty*TILE-20,8,3);
+    g.fillStyle(0x1a1020,1); g.fillRect(tx*TILE+3,ty*TILE-20,5,3);
+    g.lineStyle(1,0x1a1020,1); g.strokeRect(tx*TILE-18,ty*TILE-12,36,12);
+    g.strokeRect(tx*TILE-10,ty*TILE-22,20,10);
+    this.decorGroup.add(g);
+  }
+
+  _placeBannerShreds(tx,ty) {
+    const g=this.add.graphics().setDepth(7);
+    g.fillStyle(0x5a1020,.95);
+    g.fillRect(tx*TILE-22,ty*TILE-34,14,22);
+    g.fillRect(tx*TILE+8,ty*TILE-30,12,18);
+    g.fillStyle(0x2a2a35,1); g.fillRect(tx*TILE-24,ty*TILE-36,2,24); g.fillRect(tx*TILE+20,ty*TILE-32,2,20);
+    this.decorGroup.add(g);
+  }
+
+  _placeRuneOrb(tx,ty) {
+    const g=this.add.graphics().setDepth(8);
+    g.fillStyle(0x251840,1); g.fillCircle(tx*TILE,ty*TILE-8,10);
+    g.lineStyle(1,0x8a70d0,1); g.strokeCircle(tx*TILE,ty*TILE-8,10);
+    g.fillStyle(0x9ac4ff,.85); g.fillCircle(tx*TILE-3,ty*TILE-10,2);
+    this.decorGroup.add(g);
+    const l=this.addLight(tx*TILE,ty*TILE-8,42,0x7050ff,.25); this.zoneLights.push(l);
+  }
+
+  _placeBonePile(tx,ty) {
+    const g=this.add.graphics().setDepth(6);
+    g.fillStyle(0x8a8070,1);
+    g.fillRect(tx*TILE-14,ty*TILE-8,10,3); g.fillRect(tx*TILE-2,ty*TILE-6,12,3); g.fillRect(tx*TILE+6,ty*TILE-10,8,3);
+    g.fillStyle(0x5a5042,1); g.fillRect(tx*TILE-12,ty*TILE-11,2,3); g.fillRect(tx*TILE+9,ty*TILE-13,2,3);
+    this.decorGroup.add(g);
+  }
+
+  _placeCableSprawl(tx,ty) {
+    const g=this.add.graphics().setDepth(7);
+    g.lineStyle(2,0x1f3356,.95);
+    for(let i=0;i<5;i++){
+      const ox=tx*TILE+rn(-18,18), oy=ty*TILE+rn(-8,8);
+      g.beginPath();
+      g.moveTo(ox,oy);
+      g.lineTo(ox+rn(-12,12),oy+rn(-12,12));
+      g.lineTo(ox+rn(-14,14),oy+rn(-10,10));
+      g.lineTo(ox+rn(-16,16),oy+rn(-10,10));
+      g.strokePath();
+    }
+    g.fillStyle(0x2a2a35,1); g.fillRect(tx*TILE-8,ty*TILE-8,16,8);
+    g.fillStyle(0x50a0ff,1); g.fillRect(tx*TILE-5,ty*TILE-5,3,2); g.fillRect(tx*TILE,ty*TILE-5,3,2);
+    g.lineStyle(1,0x1a1020,1); g.strokeRect(tx*TILE-8,ty*TILE-8,16,8);
+    this.decorGroup.add(g);
+  }
+
+  _placeCoolantLeak(tx,ty) {
+    const g=this.add.graphics().setDepth(6);
+    g.fillStyle(0x40d0ff,.45);
+    g.fillCircle(tx*TILE-6,ty*TILE-2,8);
+    g.fillCircle(tx*TILE+5,ty*TILE-2,9);
+    g.fillCircle(tx*TILE+14,ty*TILE-1,6);
+    g.fillStyle(0x80e0ff,.45);
+    g.fillCircle(tx*TILE+3,ty*TILE-3,4);
+    g.fillCircle(tx*TILE+10,ty*TILE-2,3);
+    this.decorGroup.add(g);
+    const l=this.addLight(tx*TILE,ty*TILE-2,48,0x40d0ff,.22); this.zoneLights.push(l);
   }
 
   _placeBrazier(tx,ty) {
@@ -1973,6 +2133,11 @@ class MainScene extends Phaser.Scene {
     ctx.strokeStyle="#2a3a1a";ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(W-10,H-10);ctx.lineTo(W-14,H-40);ctx.lineTo(W-8,H-70);ctx.lineTo(W-12,H-100);ctx.stroke();
     for(let i=0;i<6;i++){ctx.fillStyle="#2a4a1a";ctx.fillRect(W-16+rn(-3,6),H-40+i*16,2,2);}
+    // abandoned patch cables and junk by the inn wall
+    ctx.strokeStyle="#1f3356";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(180,166);ctx.bezierCurveTo(188,154,202,174,214,162);ctx.moveTo(174,170);ctx.bezierCurveTo(188,180,205,158,220,168);ctx.stroke();
+    ctx.fillStyle="#2a2a35";ctx.fillRect(204,160,16,10);ctx.fillStyle="#68a2ff";ctx.fillRect(208,163,3,2);ctx.fillRect(213,163,3,2);
+    ctx.fillStyle="#5a4a3a";ctx.fillRect(12,164,20,12);ctx.fillRect(18,158,10,6);
     // border
     ctx.strokeStyle="#1a1020";ctx.lineWidth=2;ctx.strokeRect(1,1,W-2,H-2);
     return c;
@@ -2001,6 +2166,11 @@ class MainScene extends Phaser.Scene {
     // sign
     ctx.fillStyle="#3a3a3a";rc(ctx,72,15,118,24,3);ctx.fill();
     ctx.fillStyle="#c8a870";ctx.font="16px VT323";ctx.fillText("MIGUEL'S ARMS",80,31);
+    // discarded armor crates + small neon shard
+    ctx.fillStyle="#4a3a2a";ctx.fillRect(8,H-24,22,12);ctx.fillRect(22,H-18,14,8);
+    ctx.fillStyle="#141a2c";ctx.fillRect(170,H-22,26,10);
+    ctx.fillStyle="#4090ff";ctx.fillRect(173,H-19,6,3);ctx.fillRect(182,H-19,4,3);
+    ctx.fillStyle="#a83848";ctx.fillRect(158,H-14,8,2);
     ctx.strokeStyle="#1a1020";ctx.lineWidth=2;ctx.strokeRect(1,1,W-2,H-2);
     return c;
   }
@@ -2035,6 +2205,11 @@ class MainScene extends Phaser.Scene {
     // steps
     for(let s=0;s<3;s++){ctx.fillStyle="#b0a888";ctx.fillRect(0,H-(s+1)*14,W,14);}
     ctx.fillStyle="#a09878";ctx.fillRect(W/2-64,H-42,128,42);
+    // broken cables and abandoned kiosk shell
+    ctx.strokeStyle="#203060";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(40,H-24);ctx.bezierCurveTo(70,H-36,86,H-12,120,H-24);ctx.moveTo(W-60,H-30);ctx.bezierCurveTo(W-42,H-14,W-26,H-32,W-8,H-18);ctx.stroke();
+    ctx.fillStyle="#2a2a35";ctx.fillRect(W-98,H-30,24,12);
+    ctx.fillStyle="#5a1010";ctx.fillRect(W-94,H-26,14,4);
     ctx.strokeStyle="#1a1020";ctx.lineWidth=2;ctx.strokeRect(1,1,W-2,H-2);
     return c;
   }
