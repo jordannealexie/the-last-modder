@@ -2,6 +2,10 @@
 
 A browser-based narrative exploration game in a single file.
 
+# Live Site
+
+https://the-last-modder.vercel.app/
+
 ## Run
 
 1. Open `index.html` in a modern browser (Chrome, Edge, Firefox).
