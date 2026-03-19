@@ -788,11 +788,16 @@ class MainScene extends Phaser.Scene {
       const t=this.add.text(m+12,GAME_H-m-184+i*22,"",{fontFamily:"VT323",fontSize:`${Math.floor(14*fs)}px`,color:"#b9c8e8"}).setScrollFactor(0);
       this.chatTxts.push(t); this.ui.add(t);
     }
+    this.chatMeasure=this.add.text(-9999,-9999,"",{fontFamily:"VT323",fontSize:`${Math.floor(14*fs)}px`,color:"#fff"})
+      .setScrollFactor(0)
+      .setVisible(false);
+    this.chatRenderLines=[];
     this.chatThumb=this.add.rectangle(m+410,GAME_H-m-178,4,34,0x555566).setOrigin(.5,0).setScrollFactor(0);
     this.ui.add(this.chatThumb);
     const cz=this.add.zone(m,GAME_H-m-196,420,168).setOrigin(0).setScrollFactor(0).setInteractive();
     cz.on("wheel",(_,_dx,dy)=>{
-      this.chatScroll=Phaser.Math.Clamp(this.chatScroll+(dy>0?1:-1),0,Math.max(0,this.chatLines.length-6));
+      const maxScroll=Math.max(0,(this.chatRenderLines?this.chatRenderLines.length:0)-6);
+      this.chatScroll=Phaser.Math.Clamp(this.chatScroll+(dy>0?-1:1),0,maxScroll);
       this.renderChat();
     });
 
@@ -1598,6 +1603,8 @@ class MainScene extends Phaser.Scene {
     const bc={brennan:0xb99768,ashfield:0xa18664,archive:0x747488,dungeon:0x2a2535,server:0x161624};
     this.mmRT.fill(bc[this.zone]||0x808080,1,0,0,sz,sz);
     const dot=(x,y,c,s)=>this.mmRT.fill(c,1,x,y,s,s);
+    const mmX=wx=>Phaser.Math.Clamp((wx/(WORLD_W*TILE))*sz,0,sz-3);
+    const mmY=wy=>Phaser.Math.Clamp(((WORLD_H*TILE-wy)/(WORLD_H*TILE))*sz,0,sz-3);
 
     if(this.zone==="brennan"){
       this.mmRT.fill(0x8e7450,1,10,50,86,16); this.mmRT.fill(0x8e7450,1,38,12,12,96);
@@ -1613,10 +1620,10 @@ class MainScene extends Phaser.Scene {
     }
     this.npcs.forEach(n=>{
       if(!n.sp.visible||n.id==="sable") return;
-      dot(Phaser.Math.Clamp((n.sp.x/(WORLD_W*TILE))*sz,0,sz-3),Phaser.Math.Clamp((n.sp.y/(WORLD_H*TILE))*sz,0,sz-3),0x44aa44,3);
+      dot(mmX(n.sp.x),mmY(n.sp.y),0x44aa44,3);
     });
     const blink=Math.floor(this.sessecs*2)%2===0;
-    dot(Phaser.Math.Clamp((this.player.x/(WORLD_W*TILE))*sz,0,sz-3),Phaser.Math.Clamp((this.player.y/(WORLD_H*TILE))*sz,0,sz-3),blink?0xffffff:0x888888,3);
+    dot(mmX(this.player.x),mmY(this.player.y),blink?0xffffff:0x888888,3);
   }
 
   // ─────────────────────────────────────────────────
@@ -1628,18 +1635,60 @@ class MainScene extends Phaser.Scene {
     this.chatScroll=0; this.renderChat();
   }
 
+  _wrapChatEntry(entry,maxWidth) {
+    if(!this.chatMeasure) return [entry];
+    this.chatMeasure.setFontStyle(entry.italic?"italic":"normal");
+
+    let remaining=entry.txt||"";
+    if(!remaining.length) return [{txt:"",col:entry.col,italic:entry.italic}];
+
+    const out=[];
+    while(remaining.length>0){
+      let lo=1, hi=remaining.length, fit=1;
+      while(lo<=hi){
+        const mid=(lo+hi)>>1;
+        this.chatMeasure.setText(remaining.slice(0,mid));
+        if(this.chatMeasure.width<=maxWidth){ fit=mid; lo=mid+1; }
+        else hi=mid-1;
+      }
+
+      let cut=fit;
+      if(cut<remaining.length){
+        const ws=remaining.lastIndexOf(" ",cut);
+        if(ws>0) cut=ws;
+      }
+      if(cut<=0) cut=fit;
+
+      const line=remaining.slice(0,cut).trimEnd();
+      out.push({txt:line,col:entry.col,italic:entry.italic});
+      remaining=remaining.slice(cut).trimStart();
+    }
+    return out;
+  }
+
   renderChat() {
-    const end=this.chatLines.length-this.chatScroll;
+    const wrapped=[];
+    this.chatLines.forEach(l=>{
+      this._wrapChatEntry(l,392).forEach(w=>wrapped.push(w));
+    });
+    this.chatRenderLines=wrapped;
+
+    const maxScroll=Math.max(0,wrapped.length-6);
+    this.chatScroll=Phaser.Math.Clamp(this.chatScroll,0,maxScroll);
+
+    const end=wrapped.length-this.chatScroll;
     const start=Math.max(0,end-6);
-    const vis=this.chatLines.slice(start,end);
+    const vis=wrapped.slice(start,end);
     for(let i=0;i<6;i++){
       const l=vis[i]; const t=this.chatTxts[i]; if(!t) continue;
-      if(l){t.setText(l.txt);t.setColor(l.col);t.setFontStyle(l.italic?"italic":"normal");}
+      if(l){
+        t.setText(l.txt); t.setColor(l.col); t.setFontStyle(l.italic?"italic":"normal");
+      }
       else t.setText("");
     }
     if(this.chatThumb){
-      const maxS=Math.max(1,this.chatLines.length-6); const ratio=this.chatScroll/maxS;
-      const m=28; this.chatThumb.setY(GAME_H-m-182+4+ratio*(134-40));
+      const maxS=Math.max(1,wrapped.length-6); const ratio=this.chatScroll/maxS;
+      const m=28; this.chatThumb.setY(GAME_H-m-182+4+(1-ratio)*(134-40));
     }
   }
 
