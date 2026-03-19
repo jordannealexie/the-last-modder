@@ -415,6 +415,15 @@
           brightness: 0.08,
           uiScale: 1.0
         };
+        this.saveKey = "the-last-modder-save-v1";
+        this.saveData = {
+          npcSpoken: {},
+          secretsFound: [],
+          journalEntries: [],
+          totalPlaytime: 0,
+          dayMinutes: 16 * 60 + 29,
+          endingFlags: {}
+        };
         this.fallbackKeys = new Set();
         this.windowKeyDownHandler = null;
         this.windowKeyUpHandler = null;
@@ -481,6 +490,10 @@
       }
 
       create() {
+        this.loadSaveState();
+        this.dayMinutes = this.saveData.dayMinutes;
+        this.sessionSeconds = this.saveData.totalPlaytime;
+
         this.keys = this.input.keyboard.addKeys("W,A,S,D,E,UP,DOWN,LEFT,RIGHT,J,C,P,O,H,L,I,ESC");
         this.registerFallbackKeyboard();
         this.enableCanvasFocus();
@@ -491,6 +504,9 @@
         this.createActors();
         this.createAnimations();
         this.createHud();
+        this.createWorldDarkness();
+        this.createLoadingOverlay();
+        this.createScreenFx();
         // Temporarily disabled heavy post overlays while stabilizing visibility.
         this.createDialogueUi();
         this.createInteractionPrompt();
@@ -567,6 +583,56 @@
 
         this.refreshHud();
         this.bindStartMenu();
+
+        this.time.addEvent({
+          delay: 4000,
+          loop: true,
+          callback: () => this.persistSaveState()
+        });
+
+        window.addEventListener("beforeunload", () => {
+          this.persistSaveState();
+        });
+      }
+
+      loadSaveState() {
+        try {
+          const raw = localStorage.getItem(this.saveKey);
+          if (!raw) {
+            return;
+          }
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") {
+            return;
+          }
+          this.saveData = {
+            npcSpoken: parsed.npcSpoken || {},
+            secretsFound: Array.isArray(parsed.secretsFound) ? parsed.secretsFound : [],
+            journalEntries: Array.isArray(parsed.journalEntries) ? parsed.journalEntries : [],
+            totalPlaytime: Number(parsed.totalPlaytime) || 0,
+            dayMinutes: Number(parsed.dayMinutes) || (16 * 60 + 29),
+            endingFlags: parsed.endingFlags || {}
+          };
+        } catch (_err) {
+          this.saveData = {
+            npcSpoken: {},
+            secretsFound: [],
+            journalEntries: [],
+            totalPlaytime: 0,
+            dayMinutes: 16 * 60 + 29,
+            endingFlags: {}
+          };
+        }
+      }
+
+      persistSaveState() {
+        try {
+          this.saveData.totalPlaytime = this.sessionSeconds;
+          this.saveData.dayMinutes = this.dayMinutes;
+          localStorage.setItem(this.saveKey, JSON.stringify(this.saveData));
+        } catch (_err) {
+          // Ignore storage failures.
+        }
       }
 
       enableCanvasFocus() {
@@ -859,6 +925,7 @@
         }
 
         this.updateTimeHud();
+        this.updateDayNightOverlay();
         if (this.gameStarted) {
           this.updateMovement(dt);
           this.updatePrompt();
@@ -1166,7 +1233,92 @@
       }
 
       createWorldDarkness() {
-        this.worldDarkness = null;
+        if (this.worldDarkness) {
+          this.worldDarkness.destroy();
+        }
+        this.worldDarkness = this.add.rectangle(0, 0, GAME_W, GAME_H, 0x0a1028, 0.18)
+          .setOrigin(0)
+          .setScrollFactor(0)
+          .setDepth(38);
+      }
+
+      updateDayNightOverlay() {
+        if (!this.worldDarkness) {
+          return;
+        }
+        const dayT = this.dayMinutes / 1440;
+        const nightFactor = (1 - Math.cos((dayT - 0.5) * Math.PI * 2)) * 0.5;
+        this.worldDarkness.setAlpha(Phaser.Math.Clamp(0.40 * nightFactor, 0.0, 0.40));
+      }
+
+      createLoadingOverlay() {
+        this.loadingLayer = this.add.container(0, 0).setScrollFactor(0).setDepth(220).setVisible(false).setAlpha(0);
+        const bg = this.add.rectangle(0, 0, GAME_W, GAME_H, 0x000000, 0.92).setOrigin(0);
+        const title = this.add.text(Math.floor(GAME_W * 0.5), Math.floor(GAME_H * 0.44), "LOADING VALDRIS ONLINE", {
+          fontFamily: "VT323",
+          fontSize: "44px",
+          color: "#9db2de"
+        }).setOrigin(0.5);
+        const subtitle = this.add.text(Math.floor(GAME_W * 0.5), Math.floor(GAME_H * 0.50), "authentic 2003 recovery protocol", {
+          fontFamily: "VT323",
+          fontSize: "24px",
+          color: "#6176a4"
+        }).setOrigin(0.5);
+        this.loadingTrack = this.add.rectangle(Math.floor(GAME_W * 0.5), Math.floor(GAME_H * 0.58), Math.floor(GAME_W * 0.56), 18, 0x1a1f34, 1).setOrigin(0.5);
+        this.loadingFill = this.add.rectangle(
+          this.loadingTrack.x - this.loadingTrack.width / 2,
+          this.loadingTrack.y,
+          2,
+          14,
+          0x88a4d8,
+          1
+        ).setOrigin(0, 0.5);
+        this.loadingZoneText = this.add.text(Math.floor(GAME_W * 0.5), Math.floor(GAME_H * 0.64), "", {
+          fontFamily: "VT323",
+          fontSize: "26px",
+          color: "#d6e4ff"
+        }).setOrigin(0.5);
+        this.loadingLayer.add([bg, title, subtitle, this.loadingTrack, this.loadingFill, this.loadingZoneText]);
+      }
+
+      runZoneTransition(nextZoneName, onDone) {
+        if (!this.loadingLayer || !this.loadingFill || !this.loadingTrack) {
+          onDone();
+          return;
+        }
+        this.loadingZoneText.setText(`entering ${nextZoneName.toLowerCase()}...`);
+        this.loadingFill.width = 2;
+        this.loadingLayer.setVisible(true);
+        this.loadingLayer.setAlpha(0);
+
+        const targetWidth = this.loadingTrack.width - 6;
+        this.tweens.add({
+          targets: this.loadingLayer,
+          alpha: 1,
+          duration: 260,
+          ease: "Sine.easeOut",
+          onComplete: () => {
+            this.tweens.add({
+              targets: this.loadingFill,
+              width: targetWidth,
+              duration: 1500,
+              ease: "Linear"
+            });
+
+            this.time.delayedCall(2000, () => {
+              onDone();
+              this.tweens.add({
+                targets: this.loadingLayer,
+                alpha: 0,
+                duration: 280,
+                ease: "Sine.easeIn",
+                onComplete: () => {
+                  this.loadingLayer.setVisible(false);
+                }
+              });
+            });
+          }
+        });
       }
 
       addLightSprite(x, y, radius, color, intensity) {
@@ -1620,17 +1772,21 @@
           return;
         }
         this.zoneSwitchLock = true;
-        this.zone = ZONE_ORDER[next];
-        this.player.x = delta > 0 ? 18 : WORLD_W * TILE - 18;
-        this.player.y = 24 * TILE;
 
-        this.createWorld();
-        this.applyZoneLighting();
-        this.refreshHud();
-        this.addChat(`[SERVER]: Loading ${ZONES[this.zone].name}.`, "#cc8800");
+        const nextZone = ZONE_ORDER[next];
+        this.runZoneTransition(ZONES[nextZone].name, () => {
+          this.zone = nextZone;
+          this.player.x = delta > 0 ? 18 : WORLD_W * TILE - 18;
+          this.player.y = 24 * TILE;
 
-        this.time.delayedCall(450, () => {
-          this.zoneSwitchLock = false;
+          this.createWorld();
+          this.applyZoneLighting();
+          this.refreshHud();
+          this.addChat(`[SERVER]: Loading ${ZONES[this.zone].name}.`, "#cc8800");
+
+          this.time.delayedCall(260, () => {
+            this.zoneSwitchLock = false;
+          });
         });
       }
 
@@ -1753,6 +1909,13 @@
         if (this.activePanelId) {
           this.hideAllPanels();
         }
+
+        if (!this.saveData.npcSpoken[npc.id]) {
+          this.saveData.npcSpoken[npc.id] = { first: true, second: false };
+        } else if (!this.saveData.npcSpoken[npc.id].second) {
+          this.saveData.npcSpoken[npc.id].second = true;
+        }
+
         this.inDialogue = true;
         this.dialogueState = {
           npc,
