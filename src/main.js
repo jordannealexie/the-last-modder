@@ -451,6 +451,67 @@ class MainScene extends Phaser.Scene {
 
     this.decorGroup=this.add.group();
     this._buildZoneDecor();
+    this._buildZoneObstacles();
+  }
+
+  _buildZoneObstacles() {
+    const obs=[];
+    const add=(tx,ty,w=20,h=20,ox=0,oy=0)=>{
+      obs.push({x:tx*TILE+ox-w/2,y:ty*TILE+oy-h/2,w,h});
+    };
+
+    if(this.zone==="brennan"){
+      add(35,28,54,34);
+      add(14,24,26,26,-2,-8);
+      add(35,30,50,12,0,-8);
+      [[22,26],[28,26],[15,30],[20,32],[38,22],[44,22],[31,12],[42,24],[24,13]].forEach(([x,y])=>add(x,y,14,14));
+    }
+    if(this.zone==="ashfield"){
+      add(55,38,30,24,0,-8);
+      add(46,35,24,20,0,-8);
+      add(33,34,22,18);
+      add(50,19,18,20,0,-6);
+      add(45,24,20,16);
+    }
+    if(this.zone==="archive"){
+      for(let i=0;i<8;i++) add(12+i*6,18,88,26,0,-26);
+      add(30,40,24,18);
+      add(24,36,30,16);
+      add(34,30,24,18);
+      // terminal desks
+      [[16,18],[22,18],[28,18],[16,24],[22,24],[28,24],[33,14]].forEach(([x,y])=>add(x,y,20,16,0,-6));
+    }
+    if(this.zone==="dungeon"){
+      add(28,20,28,18,0,-8); add(52,20,28,18,0,-8);
+      add(34,28,24,16); add(48,19,22,20,0,-8); add(44,31,22,12);
+    }
+    if(this.zone==="server"){
+      for(let i=0;i<6;i++) add(12+i*8,30,44,24,0,-14);
+      add(18,16,26,18); add(38,30,30,14); add(27,26,22,18);
+    }
+    this.zoneObstacles=obs;
+  }
+
+  _collidesWithObstacles(x,y,r=10) {
+    if(!this.zoneObstacles||!this.zoneObstacles.length) return false;
+    for(const o of this.zoneObstacles){
+      if(x+r>o.x&&x-r<o.x+o.w&&y+r>o.y&&y-r<o.y+o.h) return true;
+    }
+    return false;
+  }
+
+  _collidesWithNPC(x,y,r=10) {
+    if(!this.npcs) return false;
+    for(const n of this.npcs){
+      if(!n.sp.visible) continue;
+      const d=Phaser.Math.Distance.Between(x,y,n.sp.x,n.sp.y-6);
+      if(d<r+14) return true;
+    }
+    return false;
+  }
+
+  _isBlockedPos(x,y) {
+    return this._collidesWithObstacles(x,y)||this._collidesWithNPC(x,y);
   }
 
   _drawFallbackGround() {
@@ -1423,8 +1484,12 @@ class MainScene extends Phaser.Scene {
       if(this.isDown("KEYS","S")||this.isDown("ARROWDOWN","DOWN")) vy+=1;
     }
     if(vx||vy){const l=Math.hypot(vx,vy);vx/=l;vy/=l;}
-    this.player.x=Phaser.Math.Clamp(this.player.x+vx*120*dt,14,WORLD_W*TILE-14);
-    this.player.y=Phaser.Math.Clamp(this.player.y+vy*120*dt,14,WORLD_H*TILE-10);
+    const speed=120;
+    const nx=Phaser.Math.Clamp(this.player.x+vx*speed*dt,14,WORLD_W*TILE-14);
+    const ny=Phaser.Math.Clamp(this.player.y+vy*speed*dt,14,WORLD_H*TILE-10);
+
+    if(!this._isBlockedPos(nx,this.player.y)) this.player.x=nx;
+    if(!this._isBlockedPos(this.player.x,ny)) this.player.y=ny;
     if(vx||vy){
       if(Math.abs(vx)>Math.abs(vy)) this.player.play(vx>0?"player-walk-right":"player-walk-left",true);
       else                           this.player.play(vy>0?"player-walk-down":"player-walk-up",true);
