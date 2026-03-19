@@ -15,11 +15,11 @@ const SAVE_KEY    = "tlm-save-v3";
 
 // ── ZONE CONFIG ────────────────────────────────────────────────
 const ZONES = {
-  brennan:  { name: "Brennan's Crossing", ambient: 0x151210, base: 0  },
-  ashfield: { name: "The Ashfield",       ambient: 0x131210, base: 5  },
-  archive:  { name: "Forum Archive",      ambient: 0x0e0c14, base: 10 },
-  dungeon:  { name: "Gorrath's Tomb",     ambient: 0x0a0810, base: 12 },
-  server:   { name: "Server Room",        ambient: 0x07070e, base: 14 }
+  brennan:  { name: "Brennan's Crossing", ambient: 0x1a120f, base: 0  },
+  ashfield: { name: "The Ashfield",       ambient: 0x18120e, base: 5  },
+  archive:  { name: "Forum Archive",      ambient: 0x120f1a, base: 10 },
+  dungeon:  { name: "Gorrath's Tomb",     ambient: 0x0d0814, base: 12 },
+  server:   { name: "Server Room",        ambient: 0x0b1018, base: 14 }
 };
 const ZONE_ORDER = ["brennan", "ashfield", "archive", "dungeon", "server"];
 
@@ -519,7 +519,7 @@ class MainScene extends Phaser.Scene {
 
   _drawFallbackGround() {
     const g=this.groundFB;
-    const cols={brennan:0xc8a878,ashfield:0xb09870,archive:0x7a7a8a,dungeon:0x2a2535,server:0x141420};
+    const cols={brennan:0x9f7d59,ashfield:0x85684e,archive:0x5b546a,dungeon:0x241f30,server:0x111726};
     const base=cols[this.zone]||0xc8a878;
     g.fillStyle(base,1); g.fillRect(0,0,WORLD_W*TILE,WORLD_H*TILE);
     // grid
@@ -559,6 +559,11 @@ class MainScene extends Phaser.Scene {
     }
 
     if(this.zone==="brennan"){
+      // Subtle board-like bands for a worn, lived-in floor feel.
+      for(let y=0;y<h;y+=18){
+        g.fillStyle(0x4a2f24,.10+rr()*.08);
+        g.fillRect(0,y,w,2);
+      }
       for(let i=0;i<180;i++){
         const x=rr()*w, y=rr()*h;
         g.fillStyle(0x5a4634,.10+rr()*.14);
@@ -1257,7 +1262,22 @@ class MainScene extends Phaser.Scene {
     this.scanline=this.add.tileSprite(0,0,GAME_W,GAME_H,"scan").setOrigin(0).setScrollFactor(0).setDepth(140);
     this.scanline.blendMode=Phaser.BlendModes.SCREEN;
     this.vignette=this.add.image(0,0,"vign").setOrigin(0).setScrollFactor(0).setDepth(141);
-    this.grade=this.add.rectangle(0,0,GAME_W,GAME_H,0x1a2040,.055).setOrigin(0).setScrollFactor(0).setDepth(139);
+    this.grade=this.add.rectangle(0,0,GAME_W,GAME_H,0x23141b,.09).setOrigin(0).setScrollFactor(0).setDepth(139);
+    this._applyArtStyleGrade();
+  }
+
+  _applyArtStyleGrade() {
+    if(!this.grade) return;
+    const mood={
+      brennan:[0x2a1710,.12],
+      ashfield:[0x2a1812,.14],
+      archive:[0x1e1630,.12],
+      dungeon:[0x160f26,.17],
+      server:[0x101f2f,.14]
+    };
+    const [col,a]=mood[this.zone]||[0x23141b,.09];
+    this.grade.setFillStyle(col,a);
+    if(this.scanline) this.scanline.setAlpha(this.zone==="archive"||this.zone==="server"?.52:.42);
   }
 
   // ─────────────────────────────────────────────────
@@ -1389,6 +1409,7 @@ class MainScene extends Phaser.Scene {
   applyZoneLighting() {
     this.zoneLights.forEach(l=>l.destroy()); this.zoneLights=[];
     this.lights.setAmbientColor(ZONES[this.zone].ambient);
+    this._applyArtStyleGrade();
     const pt=(tx,ty,col,r,int)=>{ const l=this.addLight(tx*TILE,ty*TILE,r,col,int); this.zoneLights.push(l); return l; };
 
     if(this.zone==="brennan"){
