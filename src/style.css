@@ -1,0 +1,331 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=VT323&display=swap');
+
+    :root {
+      --chrome-0: #0e0f14;
+      --chrome-1: #1e1e1e;
+      --chrome-2: #2e2e2e;
+      --chrome-3: #0e0e0e;
+      --panel: #14151b;
+      --text: #d7d5d0;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 20% 10%, #262131 0%, #11131b 55%, #07080c 100%);
+      color: var(--text);
+    }
+
+    #game-root {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    #game-root canvas {
+      width: 100vw !important;
+      height: 100vh !important;
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    #start-menu {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      background: #000000;
+      font-family: "VT323", monospace;
+    }
+
+    .menu-card {
+      width: min(860px, 92vw);
+      padding: 26px;
+      background: #000000;
+      color: #d6def0;
+      transform-origin: center top;
+    }
+
+    .menu-title {
+      font-size: clamp(56px, 8vw, 84px);
+      line-height: 1;
+      color: #e38d99;
+      text-align: center;
+      margin-bottom: 14px;
+      letter-spacing: 1px;
+      text-transform: lowercase;
+    }
+
+    .menu-sub {
+      font-size: 0;
+      margin: 0;
+    }
+
+    .menu-preview {
+      width: min(760px, 84vw);
+      aspect-ratio: 16 / 9;
+      margin: 0 auto 20px;
+      position: relative;
+      border: 4px solid #08122f;
+      image-rendering: pixelated;
+      background:
+        linear-gradient(180deg, #0a1238 0%, #20375a 44%, #10244f 45%, #081b3c 58%, #05152f 100%);
+      overflow: hidden;
+    }
+
+    .menu-stars {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(#d7deef 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.6;
+    }
+
+    .menu-road {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 22%;
+      height: 16%;
+      background: #16233f;
+      box-shadow: inset 0 8px 0 #203360;
+    }
+
+    .menu-road::after {
+      content: "";
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      top: 45%;
+      height: 3px;
+      background: repeating-linear-gradient(90deg, #6d7db3 0px, #6d7db3 34px, transparent 34px, transparent 64px);
+      opacity: 0.8;
+    }
+
+    .menu-car {
+      position: absolute;
+      width: 130px;
+      height: 50px;
+      right: 25%;
+      bottom: 28%;
+      background: #37288a;
+      box-shadow: inset 0 -8px 0 #25195f;
+    }
+
+    .menu-car::before {
+      content: "";
+      position: absolute;
+      width: 70px;
+      height: 24px;
+      left: 20px;
+      top: -18px;
+      background: #37288a;
+    }
+
+    .menu-menu {
+      width: min(760px, 84vw);
+      margin: 8px auto 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 130px;
+    }
+
+    .menu-col {
+      display: grid;
+      gap: 16px;
+      min-width: 250px;
+    }
+
+    .menu-btn {
+      font-family: "VT323", monospace;
+      font-size: clamp(48px, 4.4vw, 76px);
+      padding: 2px 0;
+      text-align: left;
+      color: #586a96;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      line-height: 0.94;
+      white-space: nowrap;
+    }
+
+    .menu-btn.active,
+    .menu-btn:hover {
+      color: #d8e5fa;
+    }
+
+    .menu-foot {
+      margin-top: 10px;
+      font-size: 24px;
+      color: #60719f;
+      text-align: center;
+    }
+
+    .options-panel {
+      width: min(760px, 84vw);
+      margin: 20px auto 0;
+      padding: 12px;
+      border: 2px solid #223463;
+      background: rgba(7, 12, 24, 0.92);
+      display: none;
+    }
+
+    .options-panel.show {
+      display: block;
+    }
+
+    .opt-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 70px;
+      gap: 10px;
+      align-items: center;
+      color: #b5c6e8;
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .opt-row input[type="range"] {
+      width: 100%;
+      accent-color: #8ea1d8;
+    }
+
+    #overlay-root {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      pointer-events: none;
+    }
+
+    .game-panel {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(680px, 86vw);
+      max-height: 70vh;
+      overflow-y: auto;
+      border: 2px solid #29437d;
+      background: rgba(7, 12, 24, 0.95);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      color: #d6e4ff;
+      font-family: "VT323", monospace;
+      padding: 14px 16px;
+      display: none;
+      pointer-events: auto;
+    }
+
+    .game-panel h2 {
+      margin: 0 0 8px;
+      color: #e38d99;
+      font-size: 42px;
+      line-height: 0.9;
+      font-weight: 400;
+    }
+
+    .game-panel p,
+    .game-panel li {
+      margin: 0 0 8px;
+      font-size: 28px;
+      color: #c6d8ff;
+      line-height: 1;
+    }
+
+    .panel-journal-list {
+      display: grid;
+      gap: 4px;
+      margin-top: 8px;
+      max-height: 48vh;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .panel-journal-item {
+      font-size: 22px;
+      color: #c6d8ff;
+      border-left: 2px solid #29437d;
+      padding-left: 8px;
+      line-height: 1.05;
+    }
+
+    .forum-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 10px;
+      max-height: 52vh;
+    }
+
+    .forum-threads {
+      border: 1px solid #29437d;
+      padding: 8px;
+      overflow-y: auto;
+    }
+
+    .forum-thread-btn {
+      width: 100%;
+      background: rgba(10, 18, 34, 0.9);
+      border: 1px solid #29437d;
+      color: #b7cdf6;
+      font-family: "VT323", monospace;
+      font-size: 22px;
+      text-align: left;
+      padding: 6px;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+
+    .forum-thread-btn:hover,
+    .forum-thread-btn.active {
+      color: #ffffff;
+      border-color: #5a7bc2;
+      background: rgba(18, 30, 54, 0.95);
+    }
+
+    .forum-post {
+      border: 1px solid #29437d;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 22px;
+      line-height: 1.12;
+      color: #d8e6ff;
+      white-space: pre-wrap;
+      background: rgba(10, 18, 34, 0.86);
+    }
+
+    .forum-action {
+      margin-top: 10px;
+      border: 1px solid #29437d;
+      background: rgba(10, 18, 34, 0.92);
+      color: #d8e6ff;
+      font-family: "VT323", monospace;
+      font-size: 24px;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+
+    #controls-fab {
+      position: absolute;
+      right: 26px;
+      bottom: 236px;
+      z-index: 16;
+      font-family: "VT323", monospace;
+      font-size: 30px;
+      color: #d6e4ff;
+      border: 2px solid #29437d;
+      background: rgba(7, 12, 24, 0.92);
+      padding: 4px 12px;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    #controls-fab:hover {
+      color: #ffffff;
+      background: rgba(17, 26, 46, 0.96);
+    }

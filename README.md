@@ -1,12 +1,13 @@
 # The Last Modder
 
-A browser-based narrative exploration game in a single file.
+A browser-based narrative exploration game with modular files.
 
 ## Run
 
-1. Open `index.html` in a modern browser (Chrome, Edge, Firefox).
-2. Click or press any key on the title screen to log in.
-3. Controls:
+1. Start a local web server (e.g., `python -m http.server` or `npx serve`).
+2. Open the given local URL (e.g. `http://localhost:8000`) in a modern browser (Chrome, Edge, Firefox).
+3. Click or press any key on the title screen to log in.
+4. Controls:
    - Move: Arrow keys or WASD
    - Interact/advance dialogue: E (or click)
    - Journal: J
