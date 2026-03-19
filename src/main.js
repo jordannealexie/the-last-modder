@@ -1068,6 +1068,19 @@ class MainScene extends Phaser.Scene {
     return this.audioCtx;
   }
 
+  _bootMenuMusic() {
+    const ctx=this._ensureCtx();
+    if(!ctx) return;
+    const tryStart=()=>{
+      if(this.gameStarted) return;
+      if(ctx.state==="suspended") ctx.resume().catch(()=>{});
+      this.startMenuMusic();
+    };
+    // Immediate attempt on load, then a few retries for browsers that delay unlock.
+    tryStart();
+    this.time.addEvent({delay:900,repeat:6,callback:tryStart});
+  }
+
   startMenuMusic() {
     const ctx=this._ensureCtx(); if(!ctx||this.menuMusTimer) return;
     this.menuMusGain=ctx.createGain(); this.menuMusGain.gain.value=this.cfg.music*.12; this.menuMusGain.connect(this.masterGain);
@@ -1147,7 +1160,10 @@ class MainScene extends Phaser.Scene {
     if(exit) exit.onclick=()=>this.addChat("[SYSTEM]: Exit unavailable in browser build.","#cc8800");
     if(opts) opts.onclick=()=>panel&&panel.classList.toggle("show");
 
-    document.addEventListener("pointerdown",()=>{this._ensureCtx();this.startMenuMusic();},{once:true});
+    this._bootMenuMusic();
+    const unlock=()=>this._bootMenuMusic();
+    document.addEventListener("pointerdown",unlock,{once:true});
+    document.addEventListener("keydown",unlock,{once:true});
 
     const menu=document.getElementById("start-menu");
     if(menu){
