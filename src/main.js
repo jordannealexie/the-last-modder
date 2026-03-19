@@ -437,6 +437,7 @@ class MainScene extends Phaser.Scene {
   createWorld() {
     if(this.groundLayer){ this.groundLayer.destroy(); if(this.tmap) this.tmap.destroy(); }
     if(this.groundFB)    this.groundFB.destroy();
+    if(this.groundDetail) this.groundDetail.destroy();
     if(this.decorGroup)  this.decorGroup.clear(true,true);
 
     // tilemap
@@ -448,6 +449,8 @@ class MainScene extends Phaser.Scene {
     // fallback ground
     this.groundFB=this.add.graphics().setDepth(1);
     this._drawFallbackGround();
+    this.groundDetail=this.add.graphics().setDepth(3);
+    this._drawGroundDetails();
 
     this.decorGroup=this.add.group();
     this._buildZoneDecor();
@@ -540,6 +543,97 @@ class MainScene extends Phaser.Scene {
     }
   }
 
+  _drawGroundDetails() {
+    const g=this.groundDetail;
+    if(!g) return;
+    let seed=(this.zone.charCodeAt(0)*1103515245+12345)>>>0;
+    const rr=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+    const w=WORLD_W*TILE, h=WORLD_H*TILE;
+
+    // Global micro-noise: subtle pixel mottling so the floor doesn't look flat.
+    for(let i=0;i<950;i++){
+      const x=Math.floor(rr()*w), y=Math.floor(rr()*h);
+      const a=.04+rr()*.09;
+      g.fillStyle(rr()>.5?0x000000:0xffffff,a);
+      g.fillRect(x,y,1,1);
+    }
+
+    if(this.zone==="brennan"){
+      for(let i=0;i<180;i++){
+        const x=rr()*w, y=rr()*h;
+        g.fillStyle(0x5a4634,.10+rr()*.14);
+        g.fillCircle(x,y,1+rr()*2.5);
+      }
+      // faded market chalk circles / old event markers
+      for(let i=0;i<12;i++){
+        const x=240+rr()*(w-480), y=180+rr()*(h-360), r=8+rr()*18;
+        g.lineStyle(1,0x8a7a62,.16); g.strokeCircle(x,y,r);
+      }
+      // discarded data tags
+      for(let i=0;i<26;i++){
+        const x=rr()*w, y=rr()*h;
+        g.fillStyle(0x2c4972,.35); g.fillRect(x,y,3,4);
+        g.fillStyle(0x80c0ff,.45); g.fillRect(x+1,y+1,1,1);
+      }
+    } else if(this.zone==="ashfield"){
+      for(let i=0;i<220;i++){
+        const x=rr()*w, y=rr()*h;
+        g.fillStyle(0x3a2a1a,.12+rr()*.18);
+        g.fillRect(x,y,2+rr()*4,1+rr()*2);
+      }
+      // dead patch outlines where crops used to be
+      for(let i=0;i<24;i++){
+        const x=260+rr()*(w-520), y=200+rr()*(h-400);
+        g.lineStyle(1,0x5a4a30,.22); g.strokeRect(x,y,8+rr()*10,8+rr()*10);
+      }
+      // scattered hardware fragments
+      for(let i=0;i<32;i++){
+        const x=rr()*w, y=rr()*h;
+        g.fillStyle(0x303848,.35); g.fillRect(x,y,3,2);
+      }
+    } else if(this.zone==="archive"){
+      for(let i=0;i<140;i++){
+        const x=rr()*w, y=rr()*h;
+        g.fillStyle(0x2a2030,.24); g.fillRect(x,y,2+rr()*8,1);
+      }
+      // paper scraps / printouts
+      for(let i=0;i<46;i++){
+        const x=rr()*w, y=rr()*h;
+        g.fillStyle(0xc8c0b0,.26); g.fillRect(x,y,5,4);
+        g.fillStyle(0x505a7a,.3); g.fillRect(x+1,y+1,3,1);
+      }
+      // dim data glints
+      for(let i=0;i<24;i++){
+        const x=rr()*w, y=rr()*h;
+        g.fillStyle(0x6aa0ff,.22); g.fillRect(x,y,2,2);
+      }
+    } else if(this.zone==="dungeon"){
+      for(let i=0;i<180;i++){
+        const x=rr()*w, y=rr()*h;
+        g.lineStyle(1,0x1a1525,.2+rr()*.16);
+        g.beginPath(); g.moveTo(x,y); g.lineTo(x+rr()*9,y+rr()*9); g.strokePath();
+      }
+      for(let i=0;i<38;i++){
+        const x=rr()*w, y=rr()*h;
+        g.fillStyle(0x4a3048,.24); g.fillCircle(x,y,2+rr()*4);
+      }
+    } else if(this.zone==="server"){
+      for(let i=0;i<180;i++){
+        const x=rr()*w, y=rr()*h;
+        g.fillStyle(0x1e2a48,.30); g.fillRect(x,y,6+rr()*20,1);
+      }
+      // cable shadows and coolant stains
+      for(let i=0;i<70;i++){
+        const x=rr()*w, y=rr()*h;
+        g.fillStyle(0x0a1020,.25); g.fillRect(x,y,8+rr()*16,2);
+      }
+      for(let i=0;i<26;i++){
+        const x=rr()*w, y=rr()*h;
+        g.fillStyle(0x2c80b8,.18); g.fillCircle(x,y,3+rr()*6);
+      }
+    }
+  }
+
   _buildZoneDecor() {
     const place=(k,tx,ty,d=8)=>{
       const i=this.add.image(tx*TILE,ty*TILE,k).setOrigin(.5,1).setDepth(d);
@@ -593,6 +687,58 @@ class MainScene extends Phaser.Scene {
       this._placeCoolantLeak(38,30);
       this._placeDiscardedTerminal(27,26,true);
     }
+
+    this._placeBackgroundSetDressing();
+  }
+
+  _placeBackgroundSetDressing() {
+    const g=this.add.graphics().setDepth(4);
+    if(this.zone==="brennan"){
+      // overhead cable lines and worn ad boards
+      g.lineStyle(2,0x243a64,.45);
+      g.beginPath(); g.moveTo(80,120); g.lineTo(520,92); g.lineTo(960,110); g.lineTo(1380,88); g.lineTo(1820,118); g.strokePath();
+      for(let i=0;i<5;i++){
+        const x=180+i*330;
+        g.fillStyle(0x1a2438,.55); g.fillRect(x,132,76,24);
+        g.fillStyle(0x5a80c8,.25); g.fillRect(x+6,138,18,3);
+      }
+    } else if(this.zone==="ashfield"){
+      // fence skeletons and dead irrigation lines
+      for(let i=0;i<10;i++){
+        const x=120+i*210;
+        g.fillStyle(0x4a3a2a,.55); g.fillRect(x,980,6,34);
+        g.fillStyle(0x3a2a1a,.5); g.fillRect(x-10,990,26,3);
+      }
+      g.lineStyle(2,0x34405a,.32);
+      g.beginPath(); g.moveTo(90,860); g.lineTo(600,812); g.lineTo(1120,844); g.lineTo(1680,820); g.strokePath();
+    } else if(this.zone==="archive"){
+      // overhead conduit + wall panels
+      g.fillStyle(0x1a1e30,.45); g.fillRect(0,74,WORLD_W*TILE,12);
+      g.fillStyle(0x2a3048,.45); g.fillRect(0,88,WORLD_W*TILE,4);
+      for(let i=0;i<9;i++){
+        const x=140+i*220;
+        g.fillStyle(0x252c42,.38); g.fillRect(x,240,70,110);
+      }
+    } else if(this.zone==="dungeon"){
+      // collapsed pillars and ancient floor rings
+      for(let i=0;i<7;i++){
+        const x=160+i*280;
+        g.fillStyle(0x241f32,.35); g.fillRect(x,220,22,170);
+      }
+      for(let i=0;i<6;i++){
+        g.lineStyle(1,0x3a2a52,.2); g.strokeCircle(220+i*280,980,40+rn(0,16));
+      }
+    } else if(this.zone==="server"){
+      // data trunks in the background
+      for(let i=0;i<6;i++){
+        const x=120+i*330;
+        g.fillStyle(0x1a2338,.55); g.fillRect(x,140,42,250);
+        g.fillStyle(0x2f4a7a,.45); g.fillRect(x+8,156,6,220);
+      }
+      g.lineStyle(2,0x2f4f7a,.35);
+      g.beginPath(); g.moveTo(80,420); g.lineTo(500,468); g.lineTo(920,432); g.lineTo(1380,478); g.lineTo(1860,444); g.strokePath();
+    }
+    this.decorGroup.add(g);
   }
 
   _placeFountain(tx,ty) {
