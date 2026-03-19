@@ -204,6 +204,67 @@
       width: 100%;
       accent-color: #8ea1d8;
     }
+
+    #overlay-root {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      pointer-events: none;
+    }
+
+    .game-panel {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(680px, 86vw);
+      max-height: 70vh;
+      overflow-y: auto;
+      border: 2px solid #29437d;
+      background: rgba(7, 12, 24, 0.95);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      color: #d6e4ff;
+      font-family: "VT323", monospace;
+      padding: 14px 16px;
+      display: none;
+      pointer-events: auto;
+    }
+
+    .game-panel h2 {
+      margin: 0 0 8px;
+      color: #e38d99;
+      font-size: 42px;
+      line-height: 0.9;
+      font-weight: 400;
+    }
+
+    .game-panel p,
+    .game-panel li {
+      margin: 0 0 8px;
+      font-size: 28px;
+      color: #c6d8ff;
+      line-height: 1;
+    }
+
+    #controls-fab {
+      position: absolute;
+      right: 26px;
+      bottom: 236px;
+      z-index: 16;
+      font-family: "VT323", monospace;
+      font-size: 30px;
+      color: #d6e4ff;
+      border: 2px solid #29437d;
+      background: rgba(7, 12, 24, 0.92);
+      padding: 4px 12px;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    #controls-fab:hover {
+      color: #ffffff;
+      background: rgba(17, 26, 46, 0.96);
+    }
   </style>
 </head>
 <body>
@@ -235,6 +296,48 @@
         </div>
         <div class="menu-foot">night protocol engaged</div>
       </div>
+    </div>
+
+    <div id="overlay-root">
+      <div class="game-panel" id="panel-hotkeys">
+        <h2>Hotkeys</h2>
+        <p>Move: WASD or Arrow keys</p>
+        <p>Interact / advance: E or Click</p>
+        <p>Journal: J</p>
+        <p>Credits: C</p>
+        <p>Photo mode: P</p>
+        <p>Screenshot in photo mode: O</p>
+        <p>Hotkeys: H</p>
+        <p>Changelog: L</p>
+        <p>Performance: I</p>
+        <p>Close panels: Esc</p>
+      </div>
+
+      <div class="game-panel" id="panel-journal">
+        <h2>Journal</h2>
+        <p>Day 5694: Returned to Brennan's Crossing.</p>
+        <p>Mira still keeps one room lit.</p>
+        <p>The dead tree bloomed again.</p>
+        <p>Objective: Speak to everyone still here.</p>
+      </div>
+
+      <div class="game-panel" id="panel-changelog">
+        <h2>Changelog</h2>
+        <p>v0.9.8: UI overhaul and menu options added.</p>
+        <p>v0.9.7: Dialogue, minimap, and lighting polish.</p>
+        <p>v0.9.6: Zone transitions and atmosphere systems.</p>
+        <p>v0.9.5: Procedural terrain and sprite generation.</p>
+      </div>
+
+      <div class="game-panel" id="panel-credits">
+        <h2>Credits</h2>
+        <p>The Last Modder</p>
+        <p>Design, writing, and code direction: you</p>
+        <p>Engine: Phaser 3</p>
+        <p>Art style and systems: live generated runtime content</p>
+      </div>
+
+      <button id="controls-fab">controls [H]</button>
     </div>
   </div>
 
@@ -303,6 +406,9 @@
         this.minimapAccum = 0;
         this.gameStarted = false;
         this.lastInteractAt = 0;
+        this.activePanelId = null;
+        this.photoMode = false;
+        this.showPerf = false;
         this.settings = {
           master: 0.70,
           music: 0.55,
@@ -371,7 +477,7 @@
       }
 
       create() {
-        this.keys = this.input.keyboard.addKeys("W,A,S,D,E");
+        this.keys = this.input.keyboard.addKeys("W,A,S,D,E,UP,DOWN,LEFT,RIGHT,J,C,P,O,H,L,I,ESC");
         this.prepareGeneratedTextures();
         this.lights.enable().setAmbientColor(ZONES[this.zone].ambient);
 
@@ -385,6 +491,7 @@
         this.createAtmosphereSystems();
         this.applyZoneLighting();
         this.createSpecialEffects();
+        this.createPerformanceOverlay();
 
         this.cameras.main.setZoom(RENDER_SCALE);
         this.cameras.main.setBounds(0, 0, WORLD_W * TILE, WORLD_H * TILE);
@@ -415,6 +522,24 @@
           }
           this.startDialogue(target);
         });
+
+        this.input.on("pointerdown", (pointer) => {
+          if (!this.gameStarted) return;
+          if (this.inDialogue) {
+            this.advanceDialogue();
+            return;
+          }
+          const worldPoint = pointer.positionToCamera(this.cameras.main);
+          const nearest = this.npcs
+            .filter((n) => n.sprite.visible)
+            .map((n) => ({ n, d: Phaser.Math.Distance.Between(worldPoint.x, worldPoint.y, n.sprite.x, n.sprite.y) }))
+            .sort((a, b) => a.d - b.d)[0];
+          if (nearest && nearest.d <= 30) {
+            this.startDialogue(nearest.n);
+          }
+        });
+
+        this.bindGlobalHotkeys();
 
         this.time.addEvent({
           delay: Phaser.Math.Between(8000, 12000),
@@ -662,6 +787,14 @@
           this.updateMovement(dt);
           this.updatePrompt();
           this.updateDialogueTyping(dtMs);
+        }
+        if (this.showPerf && this.perfText) {
+          this.perfText.setText(
+            `FPS ${Math.round(this.game.loop.actualFps)}\n` +
+            `Zone ${ZONES[this.zone].name}\n` +
+            `NPC ${this.npcs.filter((n) => n.sprite.visible).length}\n` +
+            `Panels ${this.activePanelId ? this.activePanelId.replace("panel-", "") : "none"}`
+          );
         }
         this.positionDialogueUi();
         this.minimapAccum += dtMs;
@@ -1347,6 +1480,18 @@
           if (this.keys.S.isDown) {
             vy += 1;
           }
+          if (this.keys.LEFT.isDown) {
+            vx -= 1;
+          }
+          if (this.keys.RIGHT.isDown) {
+            vx += 1;
+          }
+          if (this.keys.UP.isDown) {
+            vy -= 1;
+          }
+          if (this.keys.DOWN.isDown) {
+            vy += 1;
+          }
         }
 
         const len = Math.hypot(vx, vy) || 1;
@@ -1541,6 +1686,9 @@
       }
 
       startDialogue(npc) {
+        if (this.activePanelId) {
+          this.hideAllPanels();
+        }
         this.inDialogue = true;
         this.dialogueState = {
           npc,
@@ -1644,6 +1792,82 @@
         this.dialogueState = null;
         this.tweens.add({ targets: this.cameras.main, zoom: RENDER_SCALE, duration: 300, ease: "Sine.easeOut" });
         this.tweens.add({ targets: this.dialogOverlay, alpha: 0, duration: 300, ease: "Sine.easeOut" });
+      }
+
+      bindGlobalHotkeys() {
+        const controlsFab = document.getElementById("controls-fab");
+        if (controlsFab) {
+          controlsFab.onclick = () => this.togglePanel("panel-hotkeys");
+        }
+
+        this.input.keyboard.on("keydown-J", () => this.togglePanel("panel-journal"));
+        this.input.keyboard.on("keydown-C", () => this.togglePanel("panel-credits"));
+        this.input.keyboard.on("keydown-H", () => this.togglePanel("panel-hotkeys"));
+        this.input.keyboard.on("keydown-L", () => this.togglePanel("panel-changelog"));
+        this.input.keyboard.on("keydown-I", () => {
+          this.showPerf = !this.showPerf;
+          if (this.perfText) this.perfText.setVisible(this.showPerf);
+        });
+        this.input.keyboard.on("keydown-P", () => this.togglePhotoMode());
+        this.input.keyboard.on("keydown-O", () => this.takePhoto());
+        this.input.keyboard.on("keydown-ESC", () => {
+          this.hideAllPanels();
+          if (this.photoMode) this.togglePhotoMode();
+          if (this.inDialogue) this.closeDialogue();
+        });
+      }
+
+      togglePanel(id) {
+        const target = document.getElementById(id);
+        if (!target) return;
+        if (this.activePanelId === id) {
+          this.hideAllPanels();
+          return;
+        }
+        this.hideAllPanels();
+        target.style.display = "block";
+        this.activePanelId = id;
+      }
+
+      hideAllPanels() {
+        ["panel-hotkeys", "panel-journal", "panel-changelog", "panel-credits"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = "none";
+        });
+        this.activePanelId = null;
+      }
+
+      togglePhotoMode() {
+        this.photoMode = !this.photoMode;
+        if (this.ui) this.ui.setVisible(!this.photoMode);
+        if (this.perfText && !this.showPerf) this.perfText.setVisible(false);
+        if (this.dialogContainer) this.dialogContainer.setVisible(!this.photoMode && this.inDialogue);
+        if (this.dialogOverlay) this.dialogOverlay.setVisible(!this.photoMode);
+        this.addChat(this.photoMode ? "[SYSTEM]: Photo mode enabled." : "[SYSTEM]: Photo mode disabled.", "#cc8800");
+      }
+
+      takePhoto() {
+        if (!this.photoMode) {
+          this.addChat("[SYSTEM]: Enable photo mode first (P).", "#cc8800");
+          return;
+        }
+        this.game.renderer.snapshot((image) => {
+          const a = document.createElement("a");
+          a.href = image.src;
+          a.download = `the-last-modder-${Date.now()}.png`;
+          a.click();
+          this.addChat("[SYSTEM]: Screenshot saved.", "#cc8800");
+        });
+      }
+
+      createPerformanceOverlay() {
+        this.perfText = this.add.text(24, 90, "", {
+          fontFamily: "VT323",
+          fontSize: "18px",
+          color: "#9ec2ff",
+          backgroundColor: "rgba(6,10,18,0.84)",
+          padding: { left: 6, right: 6, top: 4, bottom: 4 }
+        }).setScrollFactor(0).setDepth(190).setVisible(false);
       }
 
       updateTimeHud() {
