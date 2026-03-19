@@ -26,11 +26,11 @@ const ZONE_ORDER = ["brennan", "ashfield", "archive", "dungeon", "server"];
 // ── DIALOGUE ────────────────────────────────────────────────────
 const DIALOGUE = {
   mira: [
-    "Welcome home, traveler.",
-    "The red bloom survived the frost again. I'm keeping it going.",
-    "There used to be music on Friday nights. I still hum the tune.",
-    "I made enough food for twelve. There's always enough for twelve.",
-    "Aldric sharpens his swords in the morning. It's the most human sound left."
+    "Welcome back, traveler.",
+    "Name's Enix. I keep the inn lit so the dark doesn't win.",
+    "The red bloom survived another night. I watch it like a heartbeat.",
+    "Black cloth hides the ash, but not the memories.",
+    "Miguel's steel at dawn is the only sound that feels alive."
   ],
   aldric: [
     "Measure twice, strike once. That's what my build guide said.",
@@ -78,7 +78,7 @@ const DIALOGUE = {
 
 // ── NPC DISPLAY NAMES ──────────────────────────────────────────
 const NPC_NAMES = {
-  mira: "Mira", aldric: "Aldric", herald: "The Herald",
+  mira: "Enix", aldric: "Miguel", herald: "The Herald",
   voss: "Voss", gorrath: "Gorrath", sable: "Sable",
   ewen: "Ewen", gm: "INSTANCE_GM01"
 };
@@ -172,8 +172,8 @@ const TERMINALS = {
 // ── CHARACTER PALETTES ─────────────────────────────────────────
 const PALETTES = {
   player:  { skin:"#c89a6a", hair:"#3d2b1f", coat:"#2d3a5c", coatD:"#1d2a4c", pant:"#2a2a35", shoe:"#5c3d2e", acc:"#c8b890", shadow:true,  special:null      },
-  mira:    { skin:"#c89a6a", hair:"#d0c8c0", coat:"#e8e0d0", coatD:"#c0b8a8", pant:"#5a3a30", shoe:"#5a3a2a", acc:"#c07030", shadow:true,  special:"mira"    },
-  aldric:  { skin:"#a88060", hair:"#3a3a3a", coat:"#7a7060", coatD:"#4a4030", pant:"#3a3a3a", shoe:"#3a2a1a", acc:"#c8a870", shadow:true,  special:null      },
+  mira:    { skin:"#d8c8c3", hair:"#05060b", coat:"#10121a", coatD:"#090b12", pant:"#0a0c13", shoe:"#0b0d14", acc:"#5b4678", shadow:true,  special:"enix"    },
+  aldric:  { skin:"#d6c9c2", hair:"#090b12", coat:"#7a7060", coatD:"#4a4030", pant:"#3a3a3a", shoe:"#3a2a1a", acc:"#c8a870", shadow:true,  special:null      },
   herald:  { skin:"#b89070", hair:"#9a8060", coat:"#6a4a3a", coatD:"#4a2a1a", pant:"#4a3a30", shoe:"#3a2a20", acc:"#ccaa88", shadow:true,  special:null      },
   voss:    { skin:"#d4c4a8", hair:"#e8e0d0", coat:"#7a7a8a", coatD:"#5a5a6a", pant:"#4a4a5a", shoe:"#2a2a35", acc:"#d0c8b8", shadow:true,  special:null      },
   gorrath: { skin:"#7a5060", hair:"#1a1a25", coat:"#1a1a25", coatD:"#2a2a35", pant:"#2a2a35", shoe:"#2a2a2a", acc:"#6a1020", shadow:true,  special:"gorrath" },
@@ -290,7 +290,7 @@ class MainScene extends Phaser.Scene {
 
     // init chat
     this.addChat("[SERVER]: Day 5,694 of continuous operation.","#cc8800");
-    this.addChat("The Ember Inn is quiet. Aldric is sharpening something.","#888",true);
+    this.addChat("The Ember Inn is quiet. Miguel is sharpening something.","#888",true);
     this.addChat("[SYSTEM]: Select PLAY to begin.","#cc8800");
 
     // E interact
@@ -937,10 +937,13 @@ class MainScene extends Phaser.Scene {
   createPrompt() {
     this.prompt=this.add.container(0,0).setScrollFactor(0).setDepth(145).setVisible(false);
     const bg=this.add.graphics();
-    bg.fillStyle(0x333344,1).fillRoundedRect(0,0,48,22,8);
-    bg.lineStyle(1,0x666677,1).strokeRoundedRect(.5,.5,47,21,8);
+    bg.fillGradientStyle(0x10162c,0x10162c,0x080b16,0x080b16,1).fillRoundedRect(0,0,106,30,10);
+    bg.lineStyle(2,0x2f4f7f,1).strokeRoundedRect(1,1,104,28,10);
+    bg.lineStyle(1,0x0a1020,1).strokeRoundedRect(3,3,100,24,8);
+    bg.fillStyle(0x24498a,.25).fillRoundedRect(4,4,98,7,6);
     this.prompt.add(bg);
-    this.prompt.add(this.add.text(11,3,"[ E ]",{fontFamily:"VT323",fontSize:"14px",color:"#fff"}));
+    this.prompt.add(this.add.text(8,7,"[E]",{fontFamily:"VT323",fontSize:"16px",color:"#eaf1ff"}));
+    this.prompt.add(this.add.text(42,7,"interact",{fontFamily:"VT323",fontSize:"16px",color:"#9ec2ff"}));
     this.tweens.add({targets:this.prompt,y:"-=4",duration:900,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});
   }
 
@@ -1191,7 +1194,7 @@ class MainScene extends Phaser.Scene {
     this.stopMenuMusic(); this.startAmbient();
     const m=document.getElementById("start-menu"); if(m) m.style.display="none";
     this.addChat("[SYSTEM]: Connection established. Welcome back.","#cc8800");
-    this.addChat("[Mira]: Welcome home, traveler.","#44aaff");
+    this.addChat("[Enix]: Welcome back, traveler.","#44aaff");
     if(!this.save.flags.intro){
       this.addJournal("Day 5,694: Returned to Brennan's Crossing.");
       this.addJournal("Objective: Find out who is still here.");
@@ -1384,7 +1387,7 @@ class MainScene extends Phaser.Scene {
     const wy=t.kind==="npc"?t.npc.sp.y:t.obj.y*TILE;
     const sx=(wx-cam.worldView.x)*cam.zoom;
     const sy=(wy-cam.worldView.y)*cam.zoom;
-    this.prompt.setVisible(true).setPosition(Math.round(sx-24),Math.round(sy-70));
+    this.prompt.setVisible(true).setPosition(Math.round(sx-53),Math.round(sy-78));
   }
 
   // ─────────────────────────────────────────────────
@@ -1875,6 +1878,13 @@ class MainScene extends Phaser.Scene {
         ctx.fillStyle="#d0c8c0"; ctx.fillRect(x0+22,headY+2,6,6);
         ctx.fillStyle="#e8e0d0"; ctx.fillRect(x0+10,bodyY+2,12,14); outl(ctx,x0+10,bodyY+2,12,14);
       }
+      if(pal.special==="enix"){
+        // Enix silhouette: long dark hair with bangs.
+        ctx.fillStyle=pal.hair;
+        ctx.fillRect(x0+8,headY+2,2,9); ctx.fillRect(x0+22,headY+2,2,9);
+        ctx.fillRect(x0+11,headY+1,10,2);
+        if(dir==="down") ctx.fillRect(x0+10,headY+9,12,2);
+      }
       if(pal.special==="gorrath"){
         ctx.fillStyle="#cc0010"; ctx.fillRect(x0+12,headY+6,2,2); ctx.fillRect(x0+18,headY+6,2,2);
         ctx.fillStyle="#1a1a25"; ctx.fillRect(x0+9,bodyY,14,12);
@@ -1990,7 +2000,7 @@ class MainScene extends Phaser.Scene {
     ctx.fillStyle="#7a7060"; for(let x=0;x<W;x+=12) ctx.fillRect(x,0,8,7);
     // sign
     ctx.fillStyle="#3a3a3a";rc(ctx,72,15,118,24,3);ctx.fill();
-    ctx.fillStyle="#c8a870";ctx.font="16px VT323";ctx.fillText("ALDRIC'S ARMS",80,31);
+    ctx.fillStyle="#c8a870";ctx.font="16px VT323";ctx.fillText("MIGUEL'S ARMS",80,31);
     ctx.strokeStyle="#1a1020";ctx.lineWidth=2;ctx.strokeRect(1,1,W-2,H-2);
     return c;
   }
