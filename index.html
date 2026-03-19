@@ -415,6 +415,10 @@
           brightness: 0.08,
           uiScale: 1.0
         };
+        this.fallbackKeys = new Set();
+        this.windowKeyDownHandler = null;
+        this.windowKeyUpHandler = null;
+        this.menuStartHandler = null;
       }
 
       preload() {
@@ -478,6 +482,8 @@
 
       create() {
         this.keys = this.input.keyboard.addKeys("W,A,S,D,E,UP,DOWN,LEFT,RIGHT,J,C,P,O,H,L,I,ESC");
+        this.registerFallbackKeyboard();
+        this.enableCanvasFocus();
         this.prepareGeneratedTextures();
         this.lights.enable().setAmbientColor(ZONES[this.zone].ambient);
 
@@ -563,22 +569,66 @@
         this.bindStartMenu();
       }
 
-      bindStartMenu() {
-        const start = () => {
-          if (this.gameStarted) {
+      enableCanvasFocus() {
+        const canvas = this.game && this.game.canvas;
+        if (!canvas) {
+          return;
+        }
+        canvas.setAttribute("tabindex", "0");
+        canvas.style.outline = "none";
+        const focusCanvas = () => {
+          canvas.focus();
+        };
+        canvas.addEventListener("pointerdown", focusCanvas);
+        focusCanvas();
+      }
+
+      registerFallbackKeyboard() {
+        if (this.windowKeyDownHandler || this.windowKeyUpHandler) {
+          return;
+        }
+
+        this.windowKeyDownHandler = (event) => {
+          if (!event || !event.code) {
             return;
           }
-          this.gameStarted = true;
-          this.stopMenuMusic();
-          this.startAmbientAudio();
-          const menu = document.getElementById("start-menu");
-          if (menu) {
-            menu.style.display = "none";
-          }
-          this.addChat("[SYSTEM]: Connection established.", "#cc8800");
-          this.addChat("[Mira]: Welcome home, traveler.", "#44aaff");
+          this.fallbackKeys.add(event.code.toUpperCase());
         };
 
+        this.windowKeyUpHandler = (event) => {
+          if (!event || !event.code) {
+            return;
+          }
+          this.fallbackKeys.delete(event.code.toUpperCase());
+        };
+
+        window.addEventListener("keydown", this.windowKeyDownHandler);
+        window.addEventListener("keyup", this.windowKeyUpHandler);
+      }
+
+      isPressed(code, phaserKeyName) {
+        if (phaserKeyName && this.keys && this.keys[phaserKeyName] && this.keys[phaserKeyName].isDown) {
+          return true;
+        }
+        return this.fallbackKeys.has(code);
+      }
+
+      startGameFromMenu() {
+        if (this.gameStarted) {
+          return;
+        }
+        this.gameStarted = true;
+        this.stopMenuMusic();
+        this.startAmbientAudio();
+        const menu = document.getElementById("start-menu");
+        if (menu) {
+          menu.style.display = "none";
+        }
+        this.addChat("[SYSTEM]: Connection established.", "#cc8800");
+        this.addChat("[Mira]: Welcome home, traveler.", "#44aaff");
+      }
+
+      bindStartMenu() {
         const play = document.getElementById("btn-play");
         const load = document.getElementById("btn-load");
         const options = document.getElementById("btn-options");
@@ -609,8 +659,8 @@
           this.settings.uiScale = v / 100;
         });
 
-        if (play) play.onclick = start;
-        if (load) load.onclick = start;
+        if (play) play.onclick = () => this.startGameFromMenu();
+        if (load) load.onclick = () => this.startGameFromMenu();
         if (options) {
           options.onclick = () => {
             if (panel) {
@@ -629,6 +679,32 @@
           this.startMenuMusic();
         };
         document.addEventListener("pointerdown", unlockAudio, { once: true });
+
+        const menu = document.getElementById("start-menu");
+        if (menu) {
+          this.menuStartHandler = (event) => {
+            const target = event.target;
+            if (target && target.id === "btn-options") {
+              return;
+            }
+            if (target && target.id === "opt-master") {
+              return;
+            }
+            if (target && target.id === "opt-music") {
+              return;
+            }
+            if (target && target.id === "opt-brightness") {
+              return;
+            }
+            if (target && target.id === "opt-uiscale") {
+              return;
+            }
+            this.startGameFromMenu();
+          };
+
+          menu.addEventListener("pointerdown", this.menuStartHandler);
+          menu.addEventListener("keydown", this.menuStartHandler);
+        }
 
         this.applySettings();
       }
@@ -1468,28 +1544,16 @@
         let vx = 0;
         let vy = 0;
         if (!this.inDialogue) {
-          if (this.keys.A.isDown) {
+          if (this.isPressed("KEYA", "A") || this.isPressed("ARROWLEFT", "LEFT")) {
             vx -= 1;
           }
-          if (this.keys.D.isDown) {
+          if (this.isPressed("KEYD", "D") || this.isPressed("ARROWRIGHT", "RIGHT")) {
             vx += 1;
           }
-          if (this.keys.W.isDown) {
+          if (this.isPressed("KEYW", "W") || this.isPressed("ARROWUP", "UP")) {
             vy -= 1;
           }
-          if (this.keys.S.isDown) {
-            vy += 1;
-          }
-          if (this.keys.LEFT.isDown) {
-            vx -= 1;
-          }
-          if (this.keys.RIGHT.isDown) {
-            vx += 1;
-          }
-          if (this.keys.UP.isDown) {
-            vy -= 1;
-          }
-          if (this.keys.DOWN.isDown) {
+          if (this.isPressed("KEYS", "S") || this.isPressed("ARROWDOWN", "DOWN")) {
             vy += 1;
           }
         }
