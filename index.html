@@ -1,103 +1,150 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>The Last Modder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=VT323&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-  <link rel="stylesheet" href="src/style.css">
+  <link rel="stylesheet" href="src/style.css"/>
 </head>
 <body>
-  <div id="game-root">
-    <div id="start-menu">
-      <div class="menu-card">
-        <div class="menu-title">the last modder</div>
-        <div class="menu-sub"></div>
-        <div class="menu-preview">
-          <div class="menu-stars"></div>
-          <div class="menu-road"></div>
-          <div class="menu-car"></div>
+<div id="game-root">
+
+  <!-- ═══════════════════ START MENU ═══════════════════ -->
+  <div id="start-menu">
+    <div class="menu-card">
+      <div class="menu-title">the last modder</div>
+      <div class="menu-sub">valdris online · day 5,694 · server: active</div>
+      <div class="menu-preview">
+        <div class="menu-stars"></div>
+        <div class="menu-road"></div>
+        <div class="menu-car"></div>
+        <div class="menu-preview-label">connecting to valdris online...</div>
+      </div>
+      <div class="menu-menu">
+        <div class="menu-col">
+          <button class="menu-btn active" id="btn-play">▶ continue</button>
+          <button class="menu-btn" id="btn-options">options</button>
         </div>
-        <div class="menu-menu">
-          <div class="menu-col">
-            <button class="menu-btn active" id="btn-play">▶ continue</button>
-            <button class="menu-btn" id="btn-options">options</button>
-          </div>
-          <div class="menu-col">
-            <button class="menu-btn" id="btn-load">new game</button>
-            <button class="menu-btn" id="btn-exit">quit</button>
-          </div>
-        </div>
-        <div class="options-panel" id="options-panel">
-          <label class="opt-row"><span>master</span><input id="opt-master" type="range" min="0" max="100" value="70" /><span id="opt-master-v">70</span></label>
-          <label class="opt-row"><span>music</span><input id="opt-music" type="range" min="0" max="100" value="55" /><span id="opt-music-v">55</span></label>
-          <label class="opt-row"><span>brightness</span><input id="opt-brightness" type="range" min="0" max="50" value="8" /><span id="opt-brightness-v">8</span></label>
-          <label class="opt-row"><span>ui scale</span><input id="opt-uiscale" type="range" min="80" max="150" value="100" /><span id="opt-uiscale-v">100</span></label>
-        </div>
-        <div class="menu-foot">night protocol engaged</div>
-      </div>
-    </div>
-
-    <div id="overlay-root">
-      <div class="game-panel" id="panel-hotkeys">
-        <h2>Hotkeys</h2>
-        <p>Move: WASD or Arrow keys</p>
-        <p>Interact / advance: E or Click</p>
-        <p>Journal: J</p>
-        <p>Credits: C</p>
-        <p>Photo mode: P</p>
-        <p>Screenshot in photo mode: O</p>
-        <p>Hotkeys: H</p>
-        <p>Forum panel: F</p>
-        <p>Changelog: L</p>
-        <p>Performance: I</p>
-        <p>Close panels: Esc</p>
-      </div>
-
-      <div class="game-panel" id="panel-journal">
-        <h2>Journal</h2>
-        <p id="journal-meta">Recovered entries will appear here.</p>
-        <div id="journal-list" class="panel-journal-list"></div>
-      </div>
-
-      <div class="game-panel" id="panel-changelog">
-        <h2>Changelog</h2>
-        <p>v0.9.8: UI overhaul and menu options added.</p>
-        <p>v0.9.7: Dialogue, minimap, and lighting polish.</p>
-        <p>v0.9.6: Zone transitions and atmosphere systems.</p>
-        <p>v0.9.5: Procedural terrain and sprite generation.</p>
-      </div>
-
-      <div class="game-panel" id="panel-credits">
-        <h2>Credits</h2>
-        <p>The Last Modder</p>
-        <p>Design, writing, and code direction: you</p>
-        <p>Engine: Phaser 3</p>
-        <p>Art style and systems: live generated runtime content</p>
-      </div>
-
-      <div class="game-panel" id="panel-forum">
-        <h2>Forum Archive</h2>
-        <p id="forum-heading">Terminal feed</p>
-        <div class="forum-layout">
-          <div id="forum-threads" class="forum-threads"></div>
-          <div>
-            <div id="forum-post" class="forum-post">Select a thread.</div>
-            <button id="forum-contact" class="forum-action" style="display:none;">Contact Seller</button>
-          </div>
+        <div class="menu-col">
+          <button class="menu-btn" id="btn-new">new game</button>
+          <button class="menu-btn" id="btn-exit">quit</button>
         </div>
       </div>
-
-      <div class="game-panel" id="panel-ending">
-        <h2>Ending</h2>
-        <p id="ending-title">Route pending.</p>
-        <p id="ending-body">Keep exploring Valdris Online.</p>
+      <div class="options-panel" id="options-panel">
+        <label class="opt-row"><span>master vol</span><input id="opt-master" type="range" min="0" max="100" value="70"/><span id="opt-master-v">70</span></label>
+        <label class="opt-row"><span>music vol</span><input id="opt-music" type="range" min="0" max="100" value="55"/><span id="opt-music-v">55</span></label>
+        <label class="opt-row"><span>brightness</span><input id="opt-brightness" type="range" min="0" max="50" value="8"/><span id="opt-brightness-v">8</span></label>
+        <label class="opt-row"><span>ui scale</span><input id="opt-uiscale" type="range" min="80" max="150" value="100"/><span id="opt-uiscale-v">100</span></label>
       </div>
-
-      <button id="controls-fab">controls [H]</button>
+      <div class="menu-foot">night protocol engaged &nbsp;·&nbsp; <span id="menu-clock">16:29</span> server time</div>
     </div>
   </div>
 
-  <script src="src/main.js"></script>
+  <!-- ═══════════════════ OVERLAY ROOT ═══════════════════ -->
+  <div id="overlay-root">
+
+    <!-- HOTKEYS -->
+    <div class="game-panel" id="panel-hotkeys">
+      <div class="panel-title">Hotkeys</div>
+      <div class="panel-body">
+        <p><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> — Move</p>
+        <p><kbd>E</kbd> — Interact / Advance dialogue</p>
+        <p><kbd>J</kbd> — Journal</p>
+        <p><kbd>F</kbd> — Forum Archive</p>
+        <p><kbd>C</kbd> — Credits</p>
+        <p><kbd>L</kbd> — Changelog</p>
+        <p><kbd>P</kbd> — Photo mode</p>
+        <p><kbd>O</kbd> — Screenshot (photo mode)</p>
+        <p><kbd>I</kbd> — Performance overlay</p>
+        <p><kbd>H</kbd> — Hotkeys</p>
+        <p><kbd>Esc</kbd> — Close panel / Exit dialogue</p>
+      </div>
+    </div>
+
+    <!-- JOURNAL -->
+    <div class="game-panel" id="panel-journal">
+      <div class="panel-title">Journal</div>
+      <div class="journal-header">
+        <span id="journal-meta">Recovered entries will appear here.</span>
+        <div class="journal-filters">
+          <button class="jfilter active" data-filter="all">All</button>
+          <button class="jfilter" data-filter="secrets">Secrets</button>
+        </div>
+      </div>
+      <div id="journal-list" class="panel-journal-list"></div>
+    </div>
+
+    <!-- CHANGELOG -->
+    <div class="game-panel" id="panel-changelog">
+      <div class="panel-title">Changelog</div>
+      <div class="panel-body">
+        <p>v0.9.9 — Full spec implementation: all zones, buildings, NPCs.</p>
+        <p>v0.9.8 — UI overhaul and menu options added.</p>
+        <p>v0.9.7 — Dialogue, minimap, lighting polish.</p>
+        <p>v0.9.6 — Zone transitions and atmosphere systems.</p>
+        <p>v0.9.5 — Procedural terrain and sprite generation.</p>
+        <p>v0.9.4 — Forum archive terminals implemented.</p>
+        <p>v0.9.3 — NPC schedules and day/night cycle.</p>
+        <p>v0.9.2 — Save system and journal.</p>
+        <p>v0.9.1 — World interactables and secrets.</p>
+      </div>
+    </div>
+
+    <!-- CREDITS -->
+    <div class="game-panel" id="panel-credits">
+      <div class="panel-title">Credits</div>
+      <div class="panel-body">
+        <p>The Last Modder</p>
+        <p>Design, writing &amp; code direction: you</p>
+        <p>Engine: Phaser 3 (v3.60.0)</p>
+        <p>Art: procedurally generated at runtime — no external assets</p>
+        <p>Audio: Web Audio API synthesis only — no audio files</p>
+        <p>Fonts: VT323 · Crimson Text — Google Fonts</p>
+        <br/>
+        <p style="color:#7a8aaa;font-size:20px;">"Dedicated to everyone who logged off and said 'brb'."</p>
+      </div>
+    </div>
+
+    <!-- FORUM ARCHIVE PANEL -->
+    <div class="game-panel panel-wide" id="panel-forum">
+      <div class="panel-title">Forum Archive &nbsp;<span id="forum-terminal-label" style="font-size:18px;color:#6a7a9a;"></span></div>
+      <p id="forum-heading" style="margin:0 0 8px;font-family:'VT323',monospace;font-size:19px;color:#6a7a9a;">Select a terminal to read</p>
+      <div class="forum-layout">
+        <div id="forum-threads" class="forum-threads"></div>
+        <div class="forum-right">
+          <div id="forum-post" class="forum-post">No thread selected.</div>
+          <button id="forum-contact" class="forum-action-btn" style="display:none;">📨 Contact Seller</button>
+          <div id="forum-type-area" style="display:none;">
+            <div class="forum-type-label">Complete this post. Press Enter or Submit.</div>
+            <textarea id="forum-type-input" class="forum-type-input" rows="3" placeholder="...type to continue the message..."></textarea>
+            <button id="forum-type-submit" class="forum-action-btn">Submit Post</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENDING PANEL -->
+    <div class="game-panel" id="panel-ending">
+      <div class="panel-title" id="ending-title">Route pending.</div>
+      <div class="panel-body">
+        <p id="ending-body">Keep exploring Valdris Online.</p>
+        <div id="ending-stats" style="margin-top:16px;font-size:18px;color:#5a6a8a;font-family:'VT323',monospace;"></div>
+      </div>
+    </div>
+
+    <!-- PHOTO MODE INDICATOR -->
+    <div id="photo-indicator">📷 PHOTO MODE &nbsp;·&nbsp; [O] capture &nbsp;·&nbsp; [P] exit</div>
+
+    <!-- CONTROLS FAB -->
+    <button id="controls-fab">controls [H]</button>
+
+  </div><!-- /overlay-root -->
+</div><!-- /game-root -->
+
+<script src="src/main.js"></script>
 </body>
 </html>
